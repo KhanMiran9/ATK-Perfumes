@@ -456,76 +456,7 @@ linear infinite;
         }
 
         /* Brand Story */
-        .brand-story {
-            background-color: var(--light-gray);
-            position: relative;
-        }
-
-        .story-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .story-content {
-            padding-right: 2rem;
-        }
-
-        .story-title {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .story-text {
-            margin-bottom: 1.5rem;
-            color: var(--muted);
-        }
-
-        .story-highlights {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin-top: 2.5rem;
-        }
-
-        .highlight {
-            text-align: center;
-            /* padding: 1.5rem; */
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-        }
-
-        .highlight-icon {
-            font-size: 2rem;
-            color: var(--gold);
-            margin-bottom: 1rem;
-        }
-
-        .highlight-title {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-            font-family: 'Cinzel', serif;
-        }
-
-        .highlight-text {
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
-
-        .story-image {
-            position: relative;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .story-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
+      
 
         /* Scent Notes */
         .scent-notes {
@@ -1036,6 +967,12 @@ linear infinite;
     
     .loader-brand {
         font-size: 2rem;
+    }
+}
+@media (max-width:370px){
+
+    .btn{
+        font-size:11px;
     }
 }
     </style>
@@ -2207,41 +2144,9 @@ function renderCategories(categories) {
     </script>
     <!-- Featured Products -->
    <?php include 'product1.php'?>
-
+<?php include 'our-story.php'?>
     <!-- Brand Story -->
-    <section class="section brand-story" id="story">
-        <div class="container">
-            <div class="story-grid">
-                <div class="story-content">
-                    <h2 class="section-title">Our Story</h2>
-                    <p class="story-text">Founded in 2010, ATK Perfumes began as a small boutique perfumery with a passion for creating exceptional scents that tell a story. Our journey started in a quaint studio in Paris, where our master perfumers combined traditional techniques with innovative approaches.</p>
-                    <p class="story-text">Today, we've grown into a globally recognized brand, but our commitment to quality, craftsmanship, and authenticity remains unchanged. Each fragrance is still meticulously crafted by hand, using only the finest ingredients from around the world.</p>
-                    
-                    <div class="story-highlights">
-                        <div class="highlight">
-                            <div class="highlight-icon">
-                                <i class="fas fa-leaf"></i>
-                            </div>
-                            <h4 class="highlight-title">Natural Ingredients</h4>
-                            <p class="highlight-text">Sourced from sustainable partners worldwide</p>
-                        </div>
-                        
-                        <div class="highlight">
-                            <div class="highlight-icon">
-                                <i class="fas fa-hand-sparkles"></i>
-                            </div>
-                            <h4 class="highlight-title">Handcrafted</h4>
-                            <p class="highlight-text">Each bottle is carefully crafted with precision</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="story-image fade-in">
-                    <img src="https://images.unsplash.com/photo-1615634376658-7d0cd0e18982?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Perfume Making Process">
-                </div>
-            </div>
-        </div>
-    </section>
+  
 
     <!-- Scent Notes -->
     <section class="section scent-notes" id="ingredients">
@@ -2607,7 +2512,7 @@ function renderCategories(categories) {
         let slideInterval;
         let progressInterval;
         let progressWidth = 0;
-        const slideDuration = 6000; // 6 seconds per slide
+        const slideDuration = 16000; // 6 seconds per slide
         
         // Function to show a specific slide
         function showSlide(index) {

@@ -199,7 +199,7 @@ try {
 
 .products-slider {
     display: flex;
-    gap: var(--gap);
+    gap: 1rem;
     padding-bottom: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -349,7 +349,7 @@ try {
     margin: 0;
     color: var(--black);
     line-height: 1.3;
-    min-height: 2.6em; /* Reserve space for 2 lines */
+  
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -454,7 +454,7 @@ try {
     display: flex;
     gap: 10px;
     margin-top: auto;
-    padding-top: 12px;
+    /* padding-top: 12px; */
 }
 
 .product-slider-add-btn {
@@ -514,14 +514,14 @@ try {
 
 @media (max-width: 768px) {
     .product-slider-card {
-        flex: 0 0 calc(100% - 12px);
+        flex: 0 0 calc(90% - 12px);
         min-height: 540px;
     }
     .product-slider-image-wrap {
-        height: 280px;
+        height: 400px;
     }
     .product-slider-container {
-        width: 98%;
+        width: 90%;
     }
     .product-slider-variation {
         padding: 8px 12px;
@@ -531,7 +531,7 @@ try {
 
 @media (max-width: 420px) {
     .product-slider-image-wrap {
-        height: 240px;
+        height: 300px;
     }
     .product-slider-brand {
         padding: 8px 12px;
@@ -670,7 +670,7 @@ window.__CURRENT_USER__ = <?= isset($_SESSION['user_id']) ? json_encode((int)$_S
                     
                     ${varHtml ? `<div class="product-slider-variations">${varHtml}</div>` : ''}
                     
-                    ${tagsHtml ? `<div class="product-slider-tag-row">${tagsHtml}</div>` : ''}
+                   
                 </div>
                 
                 <div class="product-slider-actions">
