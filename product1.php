@@ -242,7 +242,7 @@ try {
 }
 
 .product-slider-card:hover {
-    transform: translateY(-6px);
+   
     box-shadow: 0 18px 40px rgba(0,0,0,0.16);
 }
 

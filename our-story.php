@@ -7,23 +7,23 @@
                 <p class="story-text" data-scroll="fade-up" data-scroll-delay="100">Founded in 2010, ATK Perfumes began as a small boutique perfumery with a passion for creating exceptional scents that tell a story. Our journey started in a quaint studio in Paris, where our master perfumers combined traditional techniques with innovative approaches.</p>
                 <p class="story-text" data-scroll="fade-up" data-scroll-delay="200">Today, we've grown into a globally recognized brand, but our commitment to quality, craftsmanship, and authenticity remains unchanged. Each fragrance is still meticulously crafted by hand, using only the finest ingredients from around the world.</p>
                 
-                <div class="story-highlights">
-                    <div class="highlight" data-scroll="zoom-in" data-scroll-delay="300">
-                        <div class="highlight-icon">
-                            <img src="assets/images/free-delivery.gif" alt="Natural Ingredients" class="icon-gif">
-                        </div>
-                        <h4 class="highlight-title">Natural Ingredients</h4>
-                        <p class="highlight-text">Sourced from sustainable partners worldwide</p>
-                    </div>
-                    
-                    <div class="highlight" data-scroll="zoom-in" data-scroll-delay="400">
-                        <div class="highlight-icon">
-                            <img src="assets/images/dollar.gif" alt="Handcrafted" class="icon-gif">
-                        </div>
-                        <h4 class="highlight-title">Handcrafted</h4>
-                        <p class="highlight-text">Each bottle is carefully crafted with precision</p>
-                    </div>
-                </div>
+               <div class="story-highlights">
+    <div class="highlight" data-scroll="zoom-in" data-scroll-delay="300">
+        <div class="highlight-icon">
+            <i class="fas fa-leaf fa-2x" style="color: #2e8b57;"></i>
+        </div>
+        <h4 class="highlight-title">Natural Ingredients</h4>
+        <p class="highlight-text">Sourced from sustainable partners.</p>
+    </div>
+    
+    <div class="highlight" data-scroll="zoom-in" data-scroll-delay="400">
+        <div class="highlight-icon">
+            <i class="fas fa-hands fa-2x" style="color: #daa520;"></i>
+        </div>
+        <h4 class="highlight-title">Handcrafted Perfumes</h4>
+        <p class="highlight-text">Each bottle is carefully crafted with precision</p>
+    </div>
+</div>
             </div>
             
             <div class="story-image" data-scroll="slide-in-right">
@@ -82,7 +82,7 @@
         margin-bottom: 2.5rem;
         position: relative;
         padding-bottom: 1.5rem;
-        background: linear-gradient(45deg, var(--gold), var(--silver));
+        background: black;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -91,8 +91,8 @@
     .story-content .section-title::after {
         content: '';
         position: absolute;
-        bottom: 0;
-        left: 0;
+        bottom: 15px;
+        left: 60px;
         width: 80px;
         height: 4px;
         background: var(--gradient-gold);
@@ -107,13 +107,13 @@
         position: relative;
         padding-left: 1.5rem;
         border-left: 3px solid transparent;
-        background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.05));
+        /* background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.05)); */
         transition: all 0.5s ease;
     }
 
     .story-text:hover {
         border-left: 3px solid var(--gold);
-        background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1));
+        /* background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1)); */
         transform: translateX(5px);
     }
 
@@ -126,7 +126,7 @@
 
     .highlight {
         background: var(--white);
-        padding: 2.5rem 2rem;
+        padding: 1.5rem 1rem;
         border-radius: 20px;
         text-align: center;
         box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
@@ -134,8 +134,8 @@
         position: relative;
         overflow: hidden;
         z-index: 1;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
+        /* border: 1px solid rgba(255, 255, 255, 0.2); */
+        /* backdrop-filter: blur(10px); */
     }
 
     .highlight::before {
@@ -145,7 +145,7 @@
         left: -100%;
         width: 100%;
         height: 100%;
-        background: var(--gradient-gold);
+        /* background: var(--gradient-gold); */
         opacity: 0.1;
         transition: left 0.7s ease;
         z-index: -1;

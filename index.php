@@ -64,7 +64,7 @@ $auth = new Auth();
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 1rem 2.5rem;
+        padding: 1rem 2rem;
         font-weight: 600;
         text-decoration: none;
         border-radius: 50px;
@@ -83,10 +83,13 @@ $auth = new Auth();
         border: none;
     }
 
-    .btn-primary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(166, 109, 48, 0.4);
-    }
+  .btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.2),   /* soft dark shadow for depth */
+        0 0 15px rgba(255, 229, 142, 0.6), /* golden glow */
+        0 0 30px rgba(224, 176, 87, 0.4);  /* soft spread glow */
+}
 
     .btn-secondary {
         background: transparent;
@@ -455,94 +458,7 @@ linear infinite;
             color: var(--white);
         }
 
-        /* Brand Story */
-      
-
-        /* Scent Notes */
-        .scent-notes {
-            text-align: center;
-        }
-
-        .notes-container {
-            display: flex;
-            justify-content: center;
-            margin: 3rem 0;
-            position: relative;
-            height: 400px;
-        }
-
-        .note {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--white);
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .note:hover {
-            transform: scale(1.1);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .note-top {
-            top: 20%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--gradient-gold);
-        }
-
-        .note-heart {
-            top: 50%;
-            left: 30%;
-            transform: translateY(-50%);
-            background: var(--gradient-silver);
-        }
-
-        .note-base {
-            top: 50%;
-            right: 30%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, var(--dark-gray) 0%, var(--black) 100%);
-            color: var(--white);
-        }
-
-        .note-content {
-            text-align: center;
-        }
-
-        .note-name {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            font-family: 'Cinzel', serif;
-        }
-
-        .note-desc {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-
-        .note-detail {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 2rem;
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-        }
-
-        .note-detail.active {
-            opacity: 1;
-            visibility: visible;
-        }
+       
 
         /* How It's Made */
         .process {
@@ -589,68 +505,7 @@ linear infinite;
         }
 
         /* Testimonials */
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .testimonial {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            position: relative;
-        }
-
-        .testimonial:before {
-            content: '"';
-            position: absolute;
-            top: 1rem;
-            left: 1rem;
-            font-size: 4rem;
-            color: var(--gold);
-            opacity: 0.2;
-            font-family: 'Cinzel', serif;
-            line-height: 1;
-        }
-
-        .testimonial-content {
-            margin-bottom: 1.5rem;
-            color: var(--muted);
-            position: relative;
-            z-index: 1;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-        }
-
-        .author-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin-right: 1rem;
-        }
-
-        .author-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .author-info h4 {
-            margin-bottom: 0.25rem;
-            font-family: 'Cinzel', serif;
-        }
-
-        .author-role {
-            font-size: 0.9rem;
-            color: var(--muted);
-        }
+       
 
         /* Subscribe */
         .subscribe {
@@ -701,7 +556,7 @@ linear infinite;
             background: var(--gradient-silver);
         }
 
-        /* Footer */
+        /* Footer
         .footer {
             background-color: var(--black);
             color: var(--white);
@@ -805,7 +660,7 @@ linear infinite;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--muted);
             font-size: 0.9rem;
-        }
+        } */
 
         /* Responsive Design */
         @media (max-width: 992px) {
@@ -2149,43 +2004,8 @@ function renderCategories(categories) {
   
 
     <!-- Scent Notes -->
-    <section class="section scent-notes" id="ingredients">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">The Art of Scent</h2>
-                <p class="section-subtitle">Discover the intricate layers that create our unique fragrances.</p>
-            </div>
-            
-            <div class="notes-container">
-                <div class="note note-top">
-                    <div class="note-content">
-                        <div class="note-name">Top Notes</div>
-                        <div class="note-desc">Bergamot, Lemon</div>
-                    </div>
-                </div>
-                
-                <div class="note note-heart">
-                    <div class="note-content">
-                        <div class="note-name">Heart Notes</div>
-                        <div class="note-desc">Jasmine, Rose</div>
-                    </div>
-                </div>
-                
-                <div class="note note-base">
-                    <div class="note-content">
-                        <div class="note-name">Base Notes</div>
-                        <div class="note-desc">Sandalwood, Musk</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="note-detail">
-                <h3>Top Notes</h3>
-                <p>The initial impression of a fragrance, top notes are the lightest and most volatile scents that you smell immediately after application. They typically evaporate quickly, making way for the heart notes.</p>
-            </div>
-        </div>
-    </section>
-
+<?php include 'product2.php'?>
+<?php include 'gallery.php'?>
     <!-- How It's Made -->
     <section class="section process">
         <div class="container">
@@ -2223,55 +2043,7 @@ function renderCategories(categories) {
     </section>
 
     <!-- Testimonials -->
-    <section class="section" id="testimonials">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Editor's Choice</h2>
-                <p class="section-subtitle">What fragrance connoisseurs and editors are saying about our creations.</p>
-            </div>
-            
-            <div class="testimonials-grid">
-                <div class="testimonial fade-in">
-                    <p class="testimonial-content">"ATK Perfumes has redefined luxury fragrances. Their attention to detail and use of rare ingredients sets them apart in an overcrowded market."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">
-                            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="Sarah Johnson">
-                        </div>
-                        <div class="author-info">
-                            <h4>Sarah Johnson</h4>
-                            <p class="author-role">Vogue Magazine</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial fade-in">
-                    <p class="testimonial-content">"The Mystic Oud fragrance is a masterpiece. It's rare to find a scent that's both complex and wearable, but ATK Perfumes has achieved exactly that."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="Michael Chen">
-                        </div>
-                        <div class="author-info">
-                            <h4>Michael Chen</h4>
-                            <p class="author-role">GQ Magazine</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="testimonial fade-in">
-                    <p class="testimonial-content">"As a perfumer with 20 years of experience, I can confidently say that ATK Perfumes represents the pinnacle of artisan fragrance craftsmanship."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar">
-                            <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="Emily Rodriguez">
-                        </div>
-                        <div class="author-info">
-                            <h4>Emily Rodriguez</h4>
-                            <p class="author-role">Master Perfumer</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+   <?php include 'testimonials.php'?>
 
     <!-- Subscribe -->
     <section class="subscribe">
@@ -2289,7 +2061,7 @@ function renderCategories(categories) {
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <!-- <footer class="footer">
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-brand">
@@ -2349,8 +2121,8 @@ function renderCategories(categories) {
                 <p>&copy; 2023 ATK Perfumes. All rights reserved.</p>
             </div>
         </div>
-    </footer>
-
+    </footer> -->
+<?php include 'includes/footer.php'?>
     <!-- JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
