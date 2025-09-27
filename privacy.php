@@ -10,7 +10,7 @@ $auth = new Auth();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us | ATK Perfumes</title>
+    <title>Privacy Policy | ATK Perfumes</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -104,7 +104,6 @@ $auth = new Auth();
             transition: var(--transition);
             background-color: transparent;
         }
-
         @media(max-width: 500px) {
             .header {
                 top: 71px;
@@ -218,161 +217,63 @@ $auth = new Auth();
             cursor: pointer;
         }
 
-        /* About Hero Section */
-        .about-hero {
-            position: relative;
-            height: 20vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
-            margin-top: 120px;
-            text-align: center;
+        /* Page Header */
+        .page-header {
+    position: relative;
+    padding: 100px 0 0px;
+    background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
+    text-align: center;
+    overflow: hidden;
+
         }
 
-        .about-hero-content h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+        .page-header-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
             background: linear-gradient(45deg, var(--gold), var(--silver));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .about-hero-content p {
-            font-size: 1.3rem;
+        .page-subtitle {
+            font-size: 1.2rem;
             color: var(--muted);
-            font-family: 'Cinzel', serif;
-            letter-spacing: 2px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        /* About Story Section */
-        .about-story {
-            padding: 6rem 0;
-            background-color: var(--light-gray);
+        /* Content Section */
+        .content-section {
+            padding: 1rem 0;
         }
 
-        .story-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .story-text h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .story-text h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
-        }
-
-        .story-text p {
-            margin-bottom: 1.5rem;
-            color: var(--muted);
-        }
-
-        .story-image {
-            position: relative;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .story-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: var(--transition);
-        }
-
-        .story-image:hover img {
-            transform: scale(1.05);
-        }
-
-        /* About Values Section */
-        .about-values {
-            padding: 6rem 0;
+        .section-header {
             text-align: center;
+            margin-bottom: 4rem;
         }
 
-        .about-values h2 {
+        .section-title {
             font-size: 2.5rem;
-            margin-bottom: 3rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .about-values h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
-        }
-
-        .values-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .value-card {
-            background: var(--white);
-            padding: 2.5rem 1.5rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            text-align: center;
-        }
-
-        .value-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .value-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .value-card h3 {
-            font-size: 1.4rem;
             margin-bottom: 1rem;
-        }
-
-        .value-card p {
-            color: var(--muted);
-        }
-
-        /* About Team Section */
-        .about-team {
-            padding: 6rem 0;
-            background-color: var(--light-gray);
-            text-align: center;
-        }
-
-        .about-team h2 {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
             position: relative;
             display: inline-block;
         }
 
-        .about-team h2:after {
+        .section-title:after {
             content: '';
             position: absolute;
             bottom: -10px;
@@ -383,147 +284,50 @@ $auth = new Auth();
             background: var(--gradient-gold);
         }
 
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .team-member {
+        .policy-content {
             background: var(--white);
-            padding: 2rem;
+            padding: 3rem;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            transition: var(--transition);
         }
 
-        .team-member:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .team-member img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 1.5rem;
-            border: 4px solid var(--gold);
-        }
-
-        .team-member h3 {
-            font-size: 1.4rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .team-member p:first-of-type {
-            color: var(--gold);
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .team-member p:last-of-type {
-            color: var(--muted);
-        }
-
-        /* About Process Section */
-        .about-process {
-            padding: 6rem 0;
-            text-align: center;
-        }
-
-        .about-process h2 {
-            font-size: 2.5rem;
+        .policy-section {
             margin-bottom: 3rem;
-            position: relative;
-            display: inline-block;
         }
 
-        .about-process h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
+        .policy-section:last-child {
+            margin-bottom: 0;
         }
 
-        .process-steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-
-        .process-step {
-            background: var(--white);
-            padding: 2rem 1.5rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .process-step:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .step-number {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-gold);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .policy-section h3 {
             font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 auto 1.5rem;
-            color: var(--black);
-        }
-
-        .process-step h3 {
-            font-size: 1.3rem;
             margin-bottom: 1rem;
+            color: var(--gold);
+            font-family: 'Cinzel', serif;
         }
 
-        .process-step p {
+        .policy-section p {
+            margin-bottom: 1.5rem;
             color: var(--muted);
         }
 
-        /* About Commitment Section */
-        .about-commitment {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 100%);
-            color: var(--white);
+        .policy-section ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        .policy-section li {
+            margin-bottom: 0.5rem;
+            color: var(--muted);
+        }
+
+        .last-updated {
             text-align: center;
-        }
-
-        .commitment-content h2 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .commitment-content h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
-        }
-
-        .commitment-content p {
-            margin-bottom: 2rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            margin-top: 3rem;
+            font-style: italic;
+            color: var(--muted);
+            border-top: 1px solid var(--light-gray);
+            padding-top: 2rem;
         }
 
         /* Footer */
@@ -634,12 +438,7 @@ $auth = new Auth();
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .story-content {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-            
-            .about-hero-content h1 {
+            .page-title {
                 font-size: 3rem;
             }
         }
@@ -678,51 +477,36 @@ $auth = new Auth();
                 margin-bottom: 2rem;
             }
             
-            .nav-link {
-                color: var(--black);
-            }
-            
             .mobile-toggle {
                 display: block;
                 z-index: 1002;
             }
             
-            .about-hero {
-                height: 50vh;
-                margin-top: 100px;
-            }
-            
-            .about-hero-content h1 {
+            .page-title {
                 font-size: 2.5rem;
             }
             
-            .about-hero-content p {
-                font-size: 1.1rem;
+            .policy-content {
+                padding: 2rem;
             }
         }
 
         @media (max-width: 576px) {
-            .about-hero-content h1 {
+            .content-section {
+                padding: 4rem 0;
+            }
+            
+            .section-title {
                 font-size: 2rem;
             }
             
-            .values-grid,
-            .team-grid,
-            .process-steps {
-                grid-template-columns: 1fr;
+            .page-title {
+                font-size: 2rem;
             }
-        }
-
-        /* Animation Classes */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
+            
+            .page-header {
+                padding: 150px 0 80px;
+            }
         }
 
         /* Loading Animation */
@@ -805,10 +589,21 @@ $auth = new Auth();
                 background-position: 0% 50%;
             }
         }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
-  <!-- Loading Animation -->
+    <!-- Loading Animation -->
     <div class="loader">
         <div class="loader-content">
             <img src="assets/images/perfume.gif" alt="ATK Perfumes Loading" class="loader-gif">
@@ -852,32 +647,109 @@ $auth = new Auth();
             </div>
         </div>
     </header>
-    <!-- About Hero Section -->
-    <section class="about-hero">
+
+    <!-- Page Header -->
+    <section class="page-header">
         <div class="container">
-            <div class="about-hero-content">
-                <h1>About ATK Perfumes</h1>
-                <p>Crafting unforgettable fragrances since 2010</p>
+            <div class="page-header-content">
+                <h1 class="page-title">Privacy Policy</h1>
+                <p class="page-subtitle">At ATK Perfumes, we value your privacy and are committed to protecting your personal information.</p>
             </div>
         </div>
     </section>
 
-    <!-- About Story Section -->
-    <section class="about-story">
+    <!-- Content Section -->
+    <section class="content-section">
         <div class="container">
-            <div class="story-content">
-                <div class="story-text">
-                    <h2>Our Story</h2>
-                    <p>Founded in 2010, ATK Perfumes began as a small boutique perfumery with a passion for creating exceptional scents that tell a story. Our journey started in a quaint studio in Paris, where our master perfumers combined traditional techniques with innovative approaches.</p>
-                    <p>Today, we've grown into a globally recognized brand, but our commitment to quality, craftsmanship, and authenticity remains unchanged. Each fragrance is still meticulously crafted by hand, using only the finest ingredients from around the world.</p>
-                </div>
-                <div class="story-image">
-                    <img src="assets/images/about-story.jpg" alt="Our perfumery studio">
+            <div class="content-container">
+                <div class="policy-content fade-in">
+                    <div class="policy-section">
+                        <h3>Introduction</h3>
+                        <p>Welcome to ATK Perfumes. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or make a purchase from us. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Information We Collect</h3>
+                        <p>We may collect information about you in a variety of ways. The information we may collect on the Site includes:</p>
+                        
+                        <h4>Personal Data</h4>
+                        <p>Personally identifiable information, such as your name, shipping address, email address, and telephone number, and demographic information, such as your age, gender, hometown, and interests, that you voluntarily give to us when you register with the Site or when you choose to participate in various activities related to the Site, such as online chat and message boards.</p>
+                        
+                        <h4>Derivative Data</h4>
+                        <p>Information our servers automatically collect when you access the Site, such as your IP address, your browser type, your operating system, your access times, and the pages you have viewed directly before and after accessing the Site.</p>
+                        
+                        <h4>Financial Data</h4>
+                        <p>Financial information, such as data related to your payment method (e.g., valid credit card number, card brand, expiration date) that we may collect when you purchase, order, return, exchange, or request information about our services from the Site.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Use of Your Information</h3>
+                        <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the Site to:</p>
+                        <ul>
+                            <li>Create and manage your account.</li>
+                            <li>Process your transactions and send you related information, including purchase confirmations and invoices.</li>
+                            <li>Send you promotional messages, marketing, advertising, and other information that may be of interest to you.</li>
+                            <li>Respond to your comments, questions, and provide customer service.</li>
+                            <li>Monitor and analyze usage and trends to improve your experience with the Site.</li>
+                            <li>Prevent fraudulent transactions, monitor against theft, and protect against criminal activity.</li>
+                        </ul>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Disclosure of Your Information</h3>
+                        <p>We may share information we have collected about you in certain situations. Your information may be disclosed as follows:</p>
+                        
+                        <h4>By Law or to Protect Rights</h4>
+                        <p>If we believe the release of information about you is necessary to respond to legal process, to investigate or remedy potential violations of our policies, or to protect the rights, property, and safety of others, we may share your information as permitted or required by any applicable law, rule, or regulation.</p>
+                        
+                        <h4>Third-Party Service Providers</h4>
+                        <p>We may share your information with third parties that perform services for us or on our behalf, including payment processing, data analysis, email delivery, hosting services, customer service, and marketing assistance.</p>
+                        
+                        <h4>Marketing Communications</h4>
+                        <p>With your consent, or with an opportunity for you to withdraw consent, we may share your information with third parties for marketing purposes, as permitted by law.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Tracking Technologies</h3>
+                        <h4>Cookies and Web Beacons</h4>
+                        <p>We may use cookies, web beacons, tracking pixels, and other tracking technologies on the Site to help customize the Site and improve your experience. When you access the Site, your personal information is not collected through the use of tracking technology.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Third-Party Websites</h3>
+                        <p>The Site may contain links to third-party websites and applications of interest, including advertisements and external services, that are not affiliated with us. Once you have used these links to leave the Site, any information you provide to these third parties is not covered by this Privacy Policy, and we cannot guarantee the safety and privacy of your information.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Security of Your Information</h3>
+                        <p>We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Policy for Children</h3>
+                        <p>We do not knowingly solicit information from or market to children under the age of 13. If you become aware of any data we have collected from children under age 13, please contact us using the contact information provided below.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Changes to This Privacy Policy</h3>
+                        <p>We may update this Privacy Policy from time to time in order to reflect, for example, changes to our practices or for other operational, legal, or regulatory reasons. We will notify you of any changes by posting the new Privacy Policy on the Site. You are advised to review this Privacy Policy periodically for any changes.</p>
+                    </div>
+
+                    <div class="policy-section">
+                        <h3>Contact Us</h3>
+                        <p>If you have questions or comments about this Privacy Policy, please contact us at:</p>
+                        <p>ATK Perfumes<br>
+                        Email: privacy@atkperfumes.com<br>
+                        Phone: +1 (555) 123-4567</p>
+                    </div>
+
+                    <div class="last-updated">
+                        <p>Last updated: <?php echo date('F j, Y'); ?></p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
 
     <!-- Footer -->
     <footer class="footer">
@@ -889,6 +761,26 @@ $auth = new Auth();
                 </div>
                 
                 <div class="footer-col">
+                    <h3 class="footer-heading">Collections</h3>
+                    <ul class="footer-links">
+                        <li class="footer-link"><a href="index.php#products">For Men</a></li>
+                        <li class="footer-link"><a href="index.php#products">For Women</a></li>
+                        <li class="footer-link"><a href="index.php#products">Unisex</a></li>
+                        <li class="footer-link"><a href="index.php#products">Limited Edition</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3 class="footer-heading">Company</h3>
+                    <ul class="footer-links">
+                        <li class="footer-link"><a href="about.php">Our Story</a></li>
+                        <li class="footer-link"><a href="about.php#sustainability">Sustainability</a></li>
+                        <li class="footer-link"><a href="about.php#press">Press</a></li>
+                        <li class="footer-link"><a href="careers.php">Careers</a></li>
+                    </ul>
+                </div>
+                
+               <div class="footer-col">
                     <h3 class="footer-heading">Support</h3>
                     <ul class="footer-links">
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/contact.php">Contact Us</a></li>
@@ -897,26 +789,6 @@ $auth = new Auth();
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/privacy.php">Privacy Policy</a></li>
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/terms.php">Terms & Conditions</a></li>
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/refund.php">Return & Refund Policy</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h3 class="footer-heading">Company</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="about.php">Our Story</a></li>
-                        <li class="footer-link"><a href="about.php#values">Our Values</a></li>
-                        <li class="footer-link"><a href="#">Press</a></li>
-                        <li class="footer-link"><a href="#">Careers</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h3 class="footer-heading">Support</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="contact.php">Contact Us</a></li>
-                        <li class="footer-link"><a href="shipping.php">Shipping Policy</a></li>
-                        <li class="footer-link"><a href="faq.php">FAQ</a></li>
-                        <li class="footer-link"><a href="privacy.php">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
@@ -933,7 +805,7 @@ $auth = new Auth();
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2023 ATK Perfumes. All rights reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> ATK Perfumes. All rights reserved.</p>
             </div>
         </div>
     </footer>

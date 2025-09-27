@@ -837,7 +837,7 @@ linear infinite;
    <!-- Loading Animation -->
 <div class="loader">
     <div class="loader-content">
-        <img src="assets/images/perfume.gif" alt="ATK Perfumes Loading" class="loader-gif">
+        <img src="http://localhost/ATK-PERFUMES/assets/images/perfume.gif" alt="ATK Perfumes Loading" class="loader-gif">
         <div class="loader-brand">ATK Perfumes</div>
     </div>
 </div>
@@ -853,7 +853,7 @@ linear infinite;
                     <ul class="nav-list">
                         
                         <li><a href="#products" class="nav-link">Collections</a></li>
-                        <li><a href="#story" class="nav-link">Our Story</a></li>
+                        <li><a href="http://localhost/ATK-Perfumes/about.php" class="nav-link">About Us</a></li>
                         <li><a href="#ingredients" class="nav-link">Ingredients</a></li>
                         <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
                     </ul>
@@ -889,8 +889,8 @@ linear infinite;
                         <h1 class="slide-title">Crafting Scents of <span class="highlight">Timeless Elegance</span></h1>
                         <p class="slide-description">Discover our exclusive collection of luxury perfumes, meticulously crafted with the finest ingredients.</p>
                         <div class="slide-actions">
-                            <a href="#products" class="btn btn-primary">Explore Collection</a>
-                            <a href="#story" class="btn btn-secondary">Our Story</a>
+                            <a href="http://localhost/ATK-Perfumes/shop.php" class="btn btn-primary">Explore Collection</a>
+                            <a href="http://localhost/ATK-Perfumes/about.php" class="btn btn-secondary">Our Story</a>
                         </div>
                     </div>
                     <div class="slide-image">
@@ -2095,13 +2095,15 @@ function renderCategories(categories) {
                     </ul>
                 </div>
                 
-                <div class="footer-col">
+                 <div class="footer-col">
                     <h3 class="footer-heading">Support</h3>
                     <ul class="footer-links">
-                        <li class="footer-link"><a href="#">Contact Us</a></li>
-                        <li class="footer-link"><a href="#">Shipping & Returns</a></li>
-                        <li class="footer-link"><a href="#">FAQ</a></li>
-                        <li class="footer-link"><a href="#">Privacy Policy</a></li>
+                        <li class="footer-link"><a href="http://localhost/ATK-Perfumes/contact.php">Contact Us</a></li>
+                        <li class="footer-link"><a href="http://localhost/ATK-Perfumes/shipping.php">Shipping Policy</a></li>
+                        <li class="footer-link"><a href="http://localhost/ATK-Perfumes/faq.php">FAQ</a></li>
+                        <li class="footer-link"><a href="http://localhost/ATK-Perfumes/privacy.php">Privacy Policy</a></li>
+                        <li class="footer-link"><a href="http://localhost/ATK-Perfumes/terms.php">Terms & Conditions</a></li>
+                        <li class="footer-link"><a href="http://localhost/ATK-Perfumes/refund.php">Return & Refund Policy</a></li>
                     </ul>
                 </div>
                 

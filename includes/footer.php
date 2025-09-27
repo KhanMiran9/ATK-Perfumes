@@ -22,6 +22,7 @@
                         <span>info@atkperfumes.com</span>
                     </div>
                 </div>
+<<<<<<< HEAD
                 
                 <div class="footer-social-section">
                     <p class="social-title">Follow Us</p>
@@ -30,6 +31,25 @@
                         <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
                         <a href="#" class="social-link"><i class="fab fa-pinterest"></i></a>
                         <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+=======
+                <div class="footer-section">
+                    <h4>Customer Service</h4>
+                    <ul>
+                        <li><a href="#">Shipping Policy</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms & Conditions</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact Us</h4>
+                    <p>Email: info@luxeperfume.com</p>
+                    <p>Phone: +1 (555) 123-4567</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook">FB</a>
+                        <a href="#" aria-label="Instagram">IG</a>
+                        <a href="#" aria-label="Twitter">TW</a>
+>>>>>>> 29e05669890ecc1d7a34c7417d2c8263bd0890dc
                     </div>
                 </div>
             </div>
