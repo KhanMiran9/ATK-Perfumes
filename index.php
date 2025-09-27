@@ -1097,7 +1097,7 @@ linear infinite;
                         <h1 class="slide-title">Crafting Scents of <span class="highlight">Timeless Elegance</span></h1>
                         <p class="slide-description">Discover our exclusive collection of luxury perfumes, meticulously crafted with the finest ingredients.</p>
                         <div class="slide-actions">
-                            <a href="#products" class="btn btn-primary">Explore Collection</a>
+                            <a href="http://localhost/ATK-Perfumes/shop.php" class="btn btn-primary">Explore Collection</a>
                             <a href="http://localhost/ATK-Perfumes/about.php" class="btn btn-secondary">Our Story</a>
                         </div>
                     </div>
