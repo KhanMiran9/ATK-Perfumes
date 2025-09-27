@@ -10,7 +10,7 @@ $auth = new Auth();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us | ATK Perfumes</title>
+    <title>Return & Refund Policy | ATK Perfumes</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -104,7 +104,6 @@ $auth = new Auth();
             transition: var(--transition);
             background-color: transparent;
         }
-
         @media(max-width: 500px) {
             .header {
                 top: 71px;
@@ -218,161 +217,62 @@ $auth = new Auth();
             cursor: pointer;
         }
 
-        /* About Hero Section */
-        .about-hero {
+        /* Page Header */
+        .page-header {
             position: relative;
-            height: 20vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            padding: 100px 0 1px;
             background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
-            margin-top: 120px;
             text-align: center;
+            overflow: hidden;
         }
 
-        .about-hero-content h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+        .page-header-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
             background: linear-gradient(45deg, var(--gold), var(--silver));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        .about-hero-content p {
-            font-size: 1.3rem;
+        .page-subtitle {
+            font-size: 1.2rem;
             color: var(--muted);
-            font-family: 'Cinzel', serif;
-            letter-spacing: 2px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        /* About Story Section */
-        .about-story {
-            padding: 6rem 0;
-            background-color: var(--light-gray);
+        /* Content Section */
+        .content-section {
+            padding: 1rem 0;
         }
 
-        .story-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
+        .content-container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        .story-text h2 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .story-text h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
-        }
-
-        .story-text p {
-            margin-bottom: 1.5rem;
-            color: var(--muted);
-        }
-
-        .story-image {
-            position: relative;
-            border-radius: var(--radius);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .story-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: var(--transition);
-        }
-
-        .story-image:hover img {
-            transform: scale(1.05);
-        }
-
-        /* About Values Section */
-        .about-values {
-            padding: 6rem 0;
+        .section-header {
             text-align: center;
+            margin-bottom: 4rem;
         }
 
-        .about-values h2 {
+        .section-title {
             font-size: 2.5rem;
-            margin-bottom: 3rem;
-            position: relative;
-            display: inline-block;
-        }
-
-        .about-values h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
-        }
-
-        .values-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .value-card {
-            background: var(--white);
-            padding: 2.5rem 1.5rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            text-align: center;
-        }
-
-        .value-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .value-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .value-card h3 {
-            font-size: 1.4rem;
             margin-bottom: 1rem;
-        }
-
-        .value-card p {
-            color: var(--muted);
-        }
-
-        /* About Team Section */
-        .about-team {
-            padding: 6rem 0;
-            background-color: var(--light-gray);
-            text-align: center;
-        }
-
-        .about-team h2 {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
             position: relative;
             display: inline-block;
         }
 
-        .about-team h2:after {
+        .section-title:after {
             content: '';
             position: absolute;
             bottom: -10px;
@@ -383,147 +283,208 @@ $auth = new Auth();
             background: var(--gradient-gold);
         }
 
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .team-member {
+        .policy-content {
             background: var(--white);
-            padding: 2rem;
+            padding: 3rem;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            transition: var(--transition);
         }
 
-        .team-member:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+        .policy-section {
+            margin-bottom: 3rem;
         }
 
-        .team-member img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 1.5rem;
-            border: 4px solid var(--gold);
+        .policy-section:last-child {
+            margin-bottom: 0;
         }
 
-        .team-member h3 {
-            font-size: 1.4rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .team-member p:first-of-type {
+        .policy-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
             color: var(--gold);
-            font-weight: 600;
-            margin-bottom: 1rem;
+            font-family: 'Cinzel', serif;
         }
 
-        .team-member p:last-of-type {
+        .policy-section p {
+            margin-bottom: 1.5rem;
             color: var(--muted);
         }
 
-        /* About Process Section */
-        .about-process {
-            padding: 6rem 0;
-            text-align: center;
+        .policy-section ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
         }
 
-        .about-process h2 {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            position: relative;
-            display: inline-block;
+        .policy-section li {
+            margin-bottom: 0.5rem;
+            color: var(--muted);
         }
 
-        .about-process h2:after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: var(--gradient-gold);
+        .info-box {
+            background: linear-gradient(135deg, #f9f5f0 0%, #f0e6d6 100%);
+            border-left: 4px solid var(--gold);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+
+        .info-box h4 {
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+            font-family: 'Cinzel', serif;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #fef7f7 0%, #fde8e8 100%);
+            border-left: 4px solid #d4af37;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+
+        .warning-box h4 {
+            color: #d4af37;
+            margin-bottom: 0.5rem;
+            font-family: 'Cinzel', serif;
         }
 
         .process-steps {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 2rem;
+            margin: 2rem 0;
         }
 
         .process-step {
-            background: var(--white);
-            padding: 2rem 1.5rem;
+            background: var(--light-gray);
+            padding: 2rem;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            text-align: center;
             transition: var(--transition);
             position: relative;
         }
 
         .process-step:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow);
         }
 
         .step-number {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
             background: var(--gradient-gold);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin: 0 auto 1.5rem;
+            font-weight: bold;
+            color: var(--black);
+            font-family: 'Cinzel', serif;
+            font-size: 1.2rem;
+        }
+
+        .process-step i {
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .process-step h4 {
+            font-family: 'Cinzel', serif;
+            margin-bottom: 0.5rem;
             color: var(--black);
         }
 
-        .process-step h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-        }
-
-        .process-step p {
-            color: var(--muted);
-        }
-
-        /* About Commitment Section */
-        .about-commitment {
-            padding: 6rem 0;
-            background: linear-gradient(135deg, var(--black) 0%, var(--dark-gray) 100%);
-            color: var(--white);
-            text-align: center;
-        }
-
-        .commitment-content h2 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
+        .timeline {
             position: relative;
-            display: inline-block;
+            margin: 2rem 0;
         }
 
-        .commitment-content h2:after {
+        .timeline:before {
             content: '';
             position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
             background: var(--gradient-gold);
         }
 
-        .commitment-content p {
+        .timeline-item {
+            position: relative;
             margin-bottom: 2rem;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            padding-left: 3rem;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gold);
+            border: 2px solid var(--white);
+            box-shadow: 0 0 0 3px var(--gold);
+        }
+
+        .timeline-title {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .last-updated {
+            text-align: center;
+            margin-top: 3rem;
+            font-style: italic;
+            color: var(--muted);
+            border-top: 1px solid var(--light-gray);
+            padding-top: 2rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+
+        .policy-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .policy-table th {
+            background: var(--gradient-gold);
+            color: var(--black);
+            font-family: 'Cinzel', serif;
+            padding: 1rem;
+            text-align: left;
+        }
+
+        .policy-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .policy-table tr:nth-child(even) {
+            background-color: rgba(245, 245, 245, 0.5);
+        }
+
+        .policy-table tr:hover {
+            background-color: rgba(212, 175, 55, 0.1);
         }
 
         /* Footer */
@@ -634,12 +595,7 @@ $auth = new Auth();
 
         /* Responsive Design */
         @media (max-width: 992px) {
-            .story-content {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-            
-            .about-hero-content h1 {
+            .page-title {
                 font-size: 3rem;
             }
         }
@@ -678,51 +634,52 @@ $auth = new Auth();
                 margin-bottom: 2rem;
             }
             
-            .nav-link {
-                color: var(--black);
-            }
-            
             .mobile-toggle {
                 display: block;
                 z-index: 1002;
             }
             
-            .about-hero {
-                height: 50vh;
-                margin-top: 100px;
-            }
-            
-            .about-hero-content h1 {
+            .page-title {
                 font-size: 2.5rem;
             }
             
-            .about-hero-content p {
-                font-size: 1.1rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .about-hero-content h1 {
-                font-size: 2rem;
+            .policy-content {
+                padding: 2rem;
             }
             
-            .values-grid,
-            .team-grid,
             .process-steps {
                 grid-template-columns: 1fr;
             }
         }
 
-        /* Animation Classes */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
+        @media (max-width: 576px) {
+            .content-section {
+                padding: 4rem 0;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .page-header {
+                padding: 150px 0 80px;
+            }
+            
+            .timeline:before {
+                left: 15px;
+            }
+            
+            .timeline-item {
+                padding-left: 2.5rem;
+            }
+            
+            .timeline-item:before {
+                left: 10px;
+            }
         }
 
         /* Loading Animation */
@@ -805,10 +762,21 @@ $auth = new Auth();
                 background-position: 0% 50%;
             }
         }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
-  <!-- Loading Animation -->
+    <!-- Loading Animation -->
     <div class="loader">
         <div class="loader-content">
             <img src="assets/images/perfume.gif" alt="ATK Perfumes Loading" class="loader-gif">
@@ -852,32 +820,198 @@ $auth = new Auth();
             </div>
         </div>
     </header>
-    <!-- About Hero Section -->
-    <section class="about-hero">
+
+    <!-- Page Header -->
+    <section class="page-header">
         <div class="container">
-            <div class="about-hero-content">
-                <h1>About ATK Perfumes</h1>
-                <p>Crafting unforgettable fragrances since 2010</p>
+            <div class="page-header-content">
+                <h1 class="page-title">Return & Refund Policy</h1>
+                <p class="page-subtitle">Your satisfaction is our priority. Learn about our return process and refund options.</p>
             </div>
         </div>
     </section>
 
-    <!-- About Story Section -->
-    <section class="about-story">
+    <!-- Content Section -->
+    <section class="content-section">
         <div class="container">
-            <div class="story-content">
-                <div class="story-text">
-                    <h2>Our Story</h2>
-                    <p>Founded in 2010, ATK Perfumes began as a small boutique perfumery with a passion for creating exceptional scents that tell a story. Our journey started in a quaint studio in Paris, where our master perfumers combined traditional techniques with innovative approaches.</p>
-                    <p>Today, we've grown into a globally recognized brand, but our commitment to quality, craftsmanship, and authenticity remains unchanged. Each fragrance is still meticulously crafted by hand, using only the finest ingredients from around the world.</p>
-                </div>
-                <div class="story-image">
-                    <img src="assets/images/about-story.jpg" alt="Our perfumery studio">
+            <div class="content-container">
+                <div class="policy-content fade-in">
+                    <!-- Return Policy Overview -->
+                    <div class="policy-section">
+                        <h3>Return Policy Overview</h3>
+                        <p>At ATK Perfumes, we want you to be completely satisfied with your purchase. If you're not happy with your order for any reason, we offer a straightforward return process within 30 days of delivery.</p>
+                        
+                        <div class="info-box">
+                            <h4>Quick Return Facts</h4>
+                            <p>• 30-day return window from delivery date<br>
+                               • Items must be in original, unopened condition<br>
+                               • Original proof of purchase required<br>
+                               • Refunds processed within 5-10 business days</p>
+                        </div>
+                    </div>
+
+                    <!-- Return Process -->
+                    <div class="policy-section">
+                        <h3>How to Return an Item</h3>
+                        <p>Returning an item is simple. Follow these steps to initiate your return:</p>
+                        
+                        <div class="process-steps">
+                            <div class="process-step">
+                                <span class="step-number">1</span>
+                                <i class="fas fa-envelope"></i>
+                                <h4>Contact Us</h4>
+                                <p>Email our customer service team at returns@atkperfumes.com with your order number and reason for return.</p>
+                            </div>
+                            <div class="process-step">
+                                <span class="step-number">2</span>
+                                <i class="fas fa-print"></i>
+                                <h4>Print Label</h4>
+                                <p>We'll email you a prepaid return shipping label to use for your return package.</p>
+                            </div>
+                            <div class="process-step">
+                                <span class="step-number">3</span>
+                                <i class="fas fa-box"></i>
+                                <h4>Package & Ship</h4>
+                                <p>Securely package your item with all original packaging and ship using our provided label.</p>
+                            </div>
+                            <div class="process-step">
+                                <span class="step-number">4</span>
+                                <i class="fas fa-check-circle"></i>
+                                <h4>Receive Refund</h4>
+                                <p>Once we receive and inspect your return, we'll process your refund within 5-10 business days.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Refund Information -->
+                    <div class="policy-section">
+                        <h3>Refund Information</h3>
+                        <p>Refunds are issued to the original payment method used for purchase. Please allow 5-10 business days for the refund to appear in your account after we process it.</p>
+                        
+                        <div class="table-container">
+                            <table class="policy-table">
+                                <thead>
+                                    <tr>
+                                        <th>Refund Type</th>
+                                        <th>Processing Time</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Credit/Debit Card</td>
+                                        <td>5-10 business days</td>
+                                        <td>Time varies by bank</td>
+                                    </tr>
+                                    <tr>
+                                        <td>PayPal</td>
+                                        <td>3-5 business days</td>
+                                        <td>Refunded to PayPal balance</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Gift Card</td>
+                                        <td>24-48 hours</td>
+                                        <td>New e-gift card issued</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Store Credit</td>
+                                        <td>24 hours</td>
+                                        <td>Immediate credit to account</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h4>Return Shipping Costs</h4>
+                            <p>We provide free return shipping for items that are defective or incorrect. For returns based on preference, a $7.95 return shipping fee will be deducted from your refund amount.</p>
+                        </div>
+                    </div>
+
+                    <!-- Exceptions & Special Cases -->
+                    <div class="policy-section">
+                        <h3>Exceptions & Special Cases</h3>
+                        <p>While we strive to accommodate all returns, there are some exceptions to our policy:</p>
+                        
+                        <div class="warning-box">
+                            <h4>Non-Returnable Items</h4>
+                            <p>For health and safety reasons, we cannot accept returns on:</p>
+                            <ul>
+                                <li>Opened or used fragrance products</li>
+                                <li>Gift sets with broken seals</li>
+                                <li>Personalized or monogrammed items</li>
+                                <li>Final sale items (clearly marked)</li>
+                            </ul>
+                        </div>
+                        
+                        <h4>Damaged or Defective Items</h4>
+                        <p>If your item arrives damaged or defective, please contact us within 7 days of delivery. We will arrange for a replacement or full refund, including any shipping costs.</p>
+                        
+                        <h4>International Returns</h4>
+                        <p>International customers are responsible for return shipping costs and any applicable customs fees. Refunds will be issued in the original currency, minus any currency conversion fees.</p>
+                    </div>
+
+                    <!-- Exchange Policy -->
+                    <div class="policy-section">
+                        <h3>Exchange Policy</h3>
+                        <p>We're happy to exchange your item for a different fragrance or size, subject to availability.</p>
+                        
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <h4 class="timeline-title">Exchange Request</h4>
+                                <p>Contact us within 30 days of delivery to request an exchange</p>
+                            </div>
+                            <div class="timeline-item">
+                                <h4 class="timeline-title">Return Original Item</h4>
+                                <p>Follow our standard return process with the original packaging</p>
+                            </div>
+                            <div class="timeline-item">
+                                <h4 class="timeline-title">New Item Shipped</h4>
+                                <p>Once we receive your return, we'll ship your exchange item</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h4>Price Differences</h4>
+                            <p>If your exchange item has a higher value, you'll be charged the difference. If it has a lower value, we'll refund the difference to your original payment method.</p>
+                        </div>
+                    </div>
+
+                    <!-- Gift Returns -->
+                    <div class="policy-section">
+                        <h3>Gift Returns</h3>
+                        <p>Items received as gifts can be returned for store credit within 30 days of purchase. The gift giver will receive notification of the return.</p>
+                        
+                        <p>To return a gift:</p>
+                        <ul>
+                            <li>Contact our customer service team with the order number</li>
+                            <li>We'll verify the purchase and provide return instructions</li>
+                            <li>Once received, we'll issue a store credit e-gift card</li>
+                        </ul>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="policy-section">
+                        <h3>Need Help With a Return?</h3>
+                        <p>Our customer service team is here to help with any questions about returns or refunds.</p>
+                        
+                        <div class="info-box">
+                            <h4>Contact Information</h4>
+                            <p>Email: returns@atkperfumes.com<br>
+                               Phone: 1-800-ATK-PERF (1-800-285-7373)<br>
+                               Hours: Monday-Friday, 9am-6pm EST</p>
+                        </div>
+                        
+                        <p>For faster processing, please have your order number ready when contacting us.</p>
+                    </div>
+
+                    <div class="last-updated">
+                        <p>Last updated: <?php echo date('F j, Y'); ?></p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
 
     <!-- Footer -->
     <footer class="footer">
@@ -889,6 +1023,26 @@ $auth = new Auth();
                 </div>
                 
                 <div class="footer-col">
+                    <h3 class="footer-heading">Collections</h3>
+                    <ul class="footer-links">
+                        <li class="footer-link"><a href="index.php#products">For Men</a></li>
+                        <li class="footer-link"><a href="index.php#products">For Women</a></li>
+                        <li class="footer-link"><a href="index.php#products">Unisex</a></li>
+                        <li class="footer-link"><a href="index.php#products">Limited Edition</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3 class="footer-heading">Company</h3>
+                    <ul class="footer-links">
+                        <li class="footer-link"><a href="about.php">Our Story</a></li>
+                        <li class="footer-link"><a href="about.php#sustainability">Sustainability</a></li>
+                        <li class="footer-link"><a href="about.php#press">Press</a></li>
+                        <li class="footer-link"><a href="careers.php">Careers</a></li>
+                    </ul>
+                </div>
+                
+                  <div class="footer-col">
                     <h3 class="footer-heading">Support</h3>
                     <ul class="footer-links">
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/contact.php">Contact Us</a></li>
@@ -897,26 +1051,6 @@ $auth = new Auth();
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/privacy.php">Privacy Policy</a></li>
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/terms.php">Terms & Conditions</a></li>
                         <li class="footer-link"><a href="http://localhost/ATK-Perfumes/refund.php">Return & Refund Policy</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h3 class="footer-heading">Company</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="about.php">Our Story</a></li>
-                        <li class="footer-link"><a href="about.php#values">Our Values</a></li>
-                        <li class="footer-link"><a href="#">Press</a></li>
-                        <li class="footer-link"><a href="#">Careers</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-col">
-                    <h3 class="footer-heading">Support</h3>
-                    <ul class="footer-links">
-                        <li class="footer-link"><a href="contact.php">Contact Us</a></li>
-                        <li class="footer-link"><a href="shipping.php">Shipping Policy</a></li>
-                        <li class="footer-link"><a href="faq.php">FAQ</a></li>
-                        <li class="footer-link"><a href="privacy.php">Privacy Policy</a></li>
                     </ul>
                 </div>
                 
@@ -933,7 +1067,7 @@ $auth = new Auth();
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2023 ATK Perfumes. All rights reserved.</p>
+                <p>&copy; <?php echo date('Y'); ?> ATK Perfumes. All rights reserved.</p>
             </div>
         </div>
     </footer>

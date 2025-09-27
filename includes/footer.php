@@ -32,7 +32,7 @@
                 <div class="footer-section">
                     <h4>Customer Service</h4>
                     <ul>
-                        <li><a href="#">Shipping & Returns</a></li>
+                        <li><a href="#">Shipping Policy</a></li>
                         <li><a href="#">Privacy Policy</a></li>
                         <li><a href="#">Terms & Conditions</a></li>
                         <li><a href="#">FAQ</a></li>
