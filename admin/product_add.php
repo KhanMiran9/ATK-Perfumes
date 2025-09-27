@@ -1,306 +1,864 @@
 <?php
 require_once '../includes/config.php';
-require_once '../includes/auth.php';
 require_once '../includes/db.php';
-require_once '../includes/helpers.php';
+require_once '../includes/auth.php';
+require_once '../includes/csrf.php';
 
+// Check authentication and permissions
 $auth = new Auth();
-
-// Check if user is logged in and has permission
 if (!$auth->isLoggedIn() || !$auth->hasPermission('manage_products')) {
-    redirect('../login.php');
+    header('Location: login.php');
+    exit;
 }
 
+// Initialize database connection
 $database = new Database();
-$conn = $database->getConnection();
-
-// Get categories and attributes for form
-$categories = $conn->query("SELECT id, name FROM categories ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
-$attributes = $conn->query("SELECT id, name FROM attributes ORDER BY name")->fetchAll(PDO::FETCH_ASSOC);
+$db = $database->getConnection();
 
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = sanitizeInput($_POST['name']);
-    $sku = sanitizeInput($_POST['sku']);
-    $slug = sanitizeInput($_POST['slug']);
-    $shortDesc = sanitizeInput($_POST['short_desc']);
-    $longDesc = sanitizeInput($_POST['long_desc']);
-    $categoryId = (int)$_POST['category_id'];
-    $brand = sanitizeInput($_POST['brand']);
-    $isActive = isset($_POST['is_active']) ? 1 : 0;
-    
+if ($_POST) {
     $csrf_token = $_POST['csrf_token'] ?? '';
-    
-    if (validateCsrfToken($csrf_token)) {
-        // Validate required fields
-        if (empty($name) || empty($sku) || empty($slug)) {
-            $error = 'Please fill in all required fields';
-        } else {
-            try {
-                $conn->begin_transaction();
+    if (!CSRF::validateToken($csrf_token)) {
+        $error = "Invalid CSRF token";
+    } else {
+        try {
+            $db->beginTransaction();
+
+            // Basic product information
+            $sku = $_POST['sku'] ?? '';
+            $name = $_POST['name'] ?? '';
+            $slug = $_POST['slug'] ?? '';
+            $short_desc = $_POST['short_desc'] ?? '';
+            $long_desc = $_POST['long_desc'] ?? '';
+            $category_id = $_POST['category_id'] ?? '';
+            $brand = $_POST['brand'] ?? '';
+            $tags = $_POST['tags'] ?? '';
+            $product_type = $_POST['product_type'] ?? 'variable';
+
+            // Convert tags string to array
+            $tags_array = [];
+            if (!empty($tags)) {
+                $tags_array = array_map('trim', explode(',', $tags));
+                $tags_array = array_filter($tags_array); // Remove empty values
+            }
+            
+            // Generate slug if not provided
+            if (empty($slug)) {
+                $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+            }
+            
+            // Check if SKU or slug already exists
+            $check_query = "SELECT id FROM products WHERE sku = :sku OR slug = :slug";
+            $check_stmt = $db->prepare($check_query);
+            $check_stmt->bindParam(':sku', $sku);
+            $check_stmt->bindParam(':slug', $slug);
+            $check_stmt->execute();
+            
+            if ($check_stmt->rowCount() > 0) {
+                throw new Exception("SKU or slug already exists");
+            }
+            
+            // Insert product
+            $product_query = "INSERT INTO products 
+                            (sku, name, slug, short_desc, long_desc, category_id, brand, created_by_user_id) 
+                            VALUES (:sku, :name, :slug, :short_desc, :long_desc, :category_id, :brand, :user_id)";
+            
+            $product_stmt = $db->prepare($product_query);
+            $product_stmt->bindParam(':sku', $sku);
+            $product_stmt->bindParam(':name', $name);
+            $product_stmt->bindParam(':slug', $slug);
+            $product_stmt->bindParam(':short_desc', $short_desc);
+            $product_stmt->bindParam(':long_desc', $long_desc);
+            $product_stmt->bindParam(':category_id', $category_id);
+            $product_stmt->bindParam(':brand', $brand);
+            $product_stmt->bindParam(':user_id', $_SESSION['user_id']);
+            
+            if (!$product_stmt->execute()) {
+                throw new Exception("Failed to insert product");
+            }
+            
+            $product_id = $db->lastInsertId();
+            
+            // Handle tags
+            if (!empty($tags_array)) {
+                $tag_query = "INSERT INTO product_tags (product_id, tag) VALUES (:product_id, :tag)";
+                $tag_stmt = $db->prepare($tag_query);
                 
-                // Insert product
-                $productQuery = "INSERT INTO products (sku, name, slug, short_desc, long_desc, 
-                                    category_id, brand, is_active, created_by_user_id)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                
-                $productStmt = $conn->prepare($productQuery);
-                $productStmt->bind_param('sssssisii', $sku, $name, $slug, $shortDesc, $longDesc, 
-                                        $categoryId, $brand, $isActive, $_SESSION['user_id']);
-                
-                if ($productStmt->execute()) {
-                    $productId = $conn->insert_id;
-                    
-                    // Handle product variations
-                    if (isset($_POST['variations'])) {
-                        foreach ($_POST['variations'] as $variation) {
-                            $variationSku = sanitizeInput($variation['sku']);
-                            $price = (float)$variation['price'];
-                            $salePrice = !empty($variation['sale_price']) ? (float)$variation['sale_price'] : null;
-                            $stock = (int)$variation['stock'];
-                            $weight = (float)$variation['weight'];
-                            $isDefault = isset($variation['is_default']) ? 1 : 0;
-                            $attributesJson = json_encode($variation['attributes']);
-                            
-                            $variationQuery = "INSERT INTO product_variations 
-                                                (product_id, sku, price, sale_price, stock, weight, sku_attributes_json, is_default)
-                                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                            
-                            $variationStmt = $conn->prepare($variationQuery);
-                            $variationStmt->bind_param('isddidsi', $productId, $variationSku, $price, $salePrice, 
-                                                      $stock, $weight, $attributesJson, $isDefault);
-                            $variationStmt->execute();
-                        }
+                foreach ($tags_array as $tag) {
+                    if (!empty($tag)) {
+                        $tag_stmt->bindValue(':product_id', $product_id);
+                        $tag_stmt->bindValue(':tag', $tag);
+                        $tag_stmt->execute();
                     }
+                }
+            }
+            
+            // Handle variations based on product type
+            if ($product_type === 'variable') {
+                // Existing variations code for variable products
+                $variations = $_POST['variations'] ?? [];
+                if (!empty($variations) && is_array($variations)) {
+                    $variation_query = "INSERT INTO product_variations 
+                                      (product_id, sku, price, sale_price, stock, weight, sku_attributes_json, is_default) 
+                                      VALUES (:product_id, :sku, :price, :sale_price, :stock, :weight, :attributes, :is_default)";
                     
-                    // Handle image uploads
-                    if (!empty($_FILES['images']['name'][0])) {
-                        $uploadDir = '../assets/uploads/products/';
-                        
-                        foreach ($_FILES['images']['tmp_name'] as $index => $tmpName) {
-                            if ($_FILES['images']['error'][$index] === UPLOAD_ERR_OK) {
-                                $fileName = uniqid() . '_' . basename($_FILES['images']['name'][$index]);
-                                $targetFile = $uploadDir . $fileName;
+                    foreach ($variations as $index => $variation_data) {
+                        if (!empty($variation_data['sku']) && !empty($variation_data['price'])) {
+                            $variation_stmt = $db->prepare($variation_query);
+                            
+                            $is_default = ($index == 0) ? 1 : 0;
+                            $attributes_json = json_encode($variation_data['attributes'] ?? []);
+                            
+                            // Use bindValue instead of bindParam to avoid reference issues
+                            $variation_stmt->bindValue(':product_id', $product_id);
+                            $variation_stmt->bindValue(':sku', $variation_data['sku']);
+                            $variation_stmt->bindValue(':price', $variation_data['price']);
+                            $variation_stmt->bindValue(':sale_price', $variation_data['sale_price'] ?? null);
+                            $variation_stmt->bindValue(':stock', $variation_data['stock']);
+                            $variation_stmt->bindValue(':weight', $variation_data['weight'] ?? 0);
+                            $variation_stmt->bindValue(':attributes', $attributes_json);
+                            $variation_stmt->bindValue(':is_default', $is_default);
+                            
+                            if ($variation_stmt->execute()) {
+                                $variation_id = $db->lastInsertId();
                                 
-                                // Validate and move uploaded file
-                                $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
-                                $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-                                
-                                if (in_array($imageFileType, $allowedTypes)) {
-                                    if (move_uploaded_file($tmpName, $targetFile)) {
-                                        $altText = sanitizeInput($_POST['image_alt'][$index] ?? '');
-                                        $sortOrder = (int)($_POST['image_order'][$index] ?? 0);
-                                        
-                                        $imageQuery = "INSERT INTO product_media (product_id, file_path, alt_text, sort_order)
-                                                      VALUES (?, ?, ?, ?)";
-                                        $imageStmt = $conn->prepare($imageQuery);
-                                        $imageStmt->bind_param('issi', $productId, $fileName, $altText, $sortOrder);
-                                        $imageStmt->execute();
+                                // Handle variation images
+                                if (!empty($_FILES['variation_images']['name'][$index])) {
+                                    $upload_dir = UPLOAD_PATH . 'products/' . $product_id . '/variations/' . $variation_id . '/';
+                                    if (!is_dir($upload_dir)) {
+                                        mkdir($upload_dir, 0755, true);
+                                    }
+                                    
+                                    $variation_image_file = [
+                                        'name' => $_FILES['variation_images']['name'][$index],
+                                        'type' => $_FILES['variation_images']['type'][$index],
+                                        'tmp_name' => $_FILES['variation_images']['tmp_name'][$index],
+                                        'error' => $_FILES['variation_images']['error'][$index],
+                                        'size' => $_FILES['variation_images']['size'][$index]
+                                    ];
+                                    
+                                    $variation_image = handleFileUpload($variation_image_file, $upload_dir);
+                                    if ($variation_image) {
+                                        $image_query = "INSERT INTO variation_images (variation_id, file_path) VALUES (:variation_id, :file_path)";
+                                        $image_stmt = $db->prepare($image_query);
+                                        $image_stmt->bindValue(':variation_id', $variation_id);
+                                        $image_stmt->bindValue(':file_path', $variation_image);
+                                        $image_stmt->execute();
                                     }
                                 }
+                            } else {
+                                throw new Exception("Failed to insert variation");
                             }
                         }
                     }
-                    
-                    $conn->commit();
-                    $success = 'Product added successfully!';
-                    header('Refresh: 2; URL=products.php');
-                } else {
-                    throw new Exception('Failed to add product: ' . $productStmt->error);
+                }
+            } else {
+                // Simple product - create one variation with simple product data
+                $simple_price = $_POST['simple_price'] ?? 0;
+                $simple_sale_price = $_POST['simple_sale_price'] ?? null;
+                $simple_stock = $_POST['simple_stock'] ?? 0;
+                $simple_weight = $_POST['simple_weight'] ?? 0;
+                
+                $variation_query = "INSERT INTO product_variations 
+                                  (product_id, sku, price, sale_price, stock, weight, sku_attributes_json, is_default) 
+                                  VALUES (:product_id, :sku, :price, :sale_price, :stock, :weight, :attributes, 1)";
+                
+                $variation_stmt = $db->prepare($variation_query);
+                $attributes_json = json_encode([]); // Empty attributes for simple products
+                
+                $variation_stmt->bindValue(':product_id', $product_id);
+                $variation_stmt->bindValue(':sku', $sku . '-SIMPLE');
+                $variation_stmt->bindValue(':price', $simple_price);
+                $variation_stmt->bindValue(':sale_price', $simple_sale_price);
+                $variation_stmt->bindValue(':stock', $simple_stock);
+                $variation_stmt->bindValue(':weight', $simple_weight);
+                $variation_stmt->bindValue(':attributes', $attributes_json);
+                
+                if (!$variation_stmt->execute()) {
+                    throw new Exception("Failed to create simple product variation");
+                }
+            }
+            
+            // Handle main product image (same for both product types)
+            if (!empty($_FILES['main_image']['name'])) {
+                $upload_dir = UPLOAD_PATH . 'products/' . $product_id . '/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
                 }
                 
-            } catch (Exception $e) {
-                $conn->rollback();
-                $error = 'Error adding product: ' . $e->getMessage();
+                $main_image = handleFileUpload($_FILES['main_image'], $upload_dir);
+                if ($main_image) {
+                    $media_query = "INSERT INTO product_media (product_id, file_path, alt_text, sort_order) 
+                                   VALUES (:product_id, :file_path, :alt_text, 0)";
+                    $media_stmt = $db->prepare($media_query);
+                    $media_stmt->bindValue(':product_id', $product_id);
+                    $media_stmt->bindValue(':file_path', $main_image);
+                    $media_stmt->bindValue(':alt_text', $name);
+                    $media_stmt->execute();
+                }
             }
+            
+            // Handle gallery images (same for both product types)
+            if (!empty($_FILES['gallery_images']['name'][0])) {
+                $upload_dir = UPLOAD_PATH . 'products/' . $product_id . '/gallery/';
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0755, true);
+                }
+                
+                $gallery_query = "INSERT INTO product_media (product_id, file_path, alt_text, sort_order) 
+                                 VALUES (:product_id, :file_path, :alt_text, :sort_order)";
+                $gallery_stmt = $db->prepare($gallery_query);
+                $sort_order = 1;
+                
+                foreach ($_FILES['gallery_images']['name'] as $index => $filename) {
+                    if (!empty($filename)) {
+                        $file = [
+                            'name' => $_FILES['gallery_images']['name'][$index],
+                            'type' => $_FILES['gallery_images']['type'][$index],
+                            'tmp_name' => $_FILES['gallery_images']['tmp_name'][$index],
+                            'error' => $_FILES['gallery_images']['error'][$index],
+                            'size' => $_FILES['gallery_images']['size'][$index]
+                        ];
+                        
+                        $gallery_image = handleFileUpload($file, $upload_dir);
+                        if ($gallery_image) {
+                            $gallery_stmt->bindValue(':product_id', $product_id);
+                            $gallery_stmt->bindValue(':file_path', $gallery_image);
+                            $gallery_stmt->bindValue(':alt_text', $name . ' - Image ' . $sort_order);
+                            $gallery_stmt->bindValue(':sort_order', $sort_order);
+                            $gallery_stmt->execute();
+                            $sort_order++;
+                        }
+                    }
+                }
+            }
+            
+            $db->commit();
+            $success = "Product added successfully! <a href='product_edit.php?id=" . $product_id . "'>Edit product</a>";
+            
+        } catch (Exception $e) {
+            $db->rollBack();
+            $error = "Error: " . $e->getMessage();
         }
-    } else {
-        $error = 'Invalid CSRF token';
     }
 }
 
-$csrf_token = generateCsrfToken();
+// File upload handler function
+function handleFileUpload($file, $upload_dir) {
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return false;
+    }
+    
+    // Validate file type
+    $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!in_array($file['type'], $allowed_types)) {
+        return false;
+    }
+    
+    // Generate unique filename
+    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    $filename = uniqid() . '.' . $extension;
+    $filepath = $upload_dir . $filename;
+    
+    if (move_uploaded_file($file['tmp_name'], $filepath)) {
+        // Return path relative to website root (for frontend access)
+        $relative_path = str_replace(UPLOAD_PATH, 'assets/uploads/', $filepath);
+        return $relative_path;
+    }
+    
+    return false;
+}
+
+// Get categories for dropdown
+$categories_query = "SELECT id, name, parent_id FROM categories ORDER BY name";
+$categories_stmt = $db->prepare($categories_query);
+$categories_stmt->execute();
+$categories = $categories_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get attributes for variations
+$attributes_query = "SELECT a.id, a.name, a.type, av.id as value_id, av.value, av.slug 
+                    FROM attributes a 
+                    LEFT JOIN attribute_values av ON a.id = av.attribute_id 
+                    ORDER BY a.name, av.value";
+$attributes_stmt = $db->prepare($attributes_query);
+$attributes_stmt->execute();
+$attributes = [];
+while ($row = $attributes_stmt->fetch(PDO::FETCH_ASSOC)) {
+    if (!isset($attributes[$row['name']])) {
+        $attributes[$row['name']] = [
+            'id' => $row['id'],
+            'type' => $row['type'],
+            'values' => []
+        ];
+    }
+    if ($row['value_id']) {
+        $attributes[$row['name']]['values'][] = [
+            'id' => $row['value_id'],
+            'value' => $row['value'],
+            'slug' => $row['slug']
+        ];
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product | LuxePerfume Admin</title>
+    <title>Add Product - LuxePerfume Admin</title>
     <link rel="stylesheet" href="../assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="admin-container">
         <?php include '../includes/admin-sidebar.php'; ?>
         
         <div class="admin-content">
-            <div class="admin-header">
-                <h1>Add New Product</h1>
-                <a href="products.php" class="btn btn-secondary">Back to Products</a>
+            <header class="admin-header">
+                <h1><i class="fas fa-plus-circle"></i> Add New Product</h1>
+                <div class="header-actions">
+                    <a href="products.php" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Products
+                    </a>
+                    <a href="attributes.php" class="btn btn-primary">
+                        <i class="fas fa-tags"></i> Manage Attributes
+                    </a>
+                </div>
+            </header>
+
+            <main class="admin-main">
+                <?php if (isset($error)): ?>
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (isset($success)): ?>
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> <?php echo $success; ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" enctype="multipart/form-data" class="product-form">
+                    <?php echo CSRF::getTokenField(); ?>
+                    <div class="card">
+    <div class="card-header">
+        <h2><i class="fas fa-cube"></i> Product Type</h2>
+    </div>
+    <div class="card-body">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="product_type">Product Type *</label>
+                <select name="product_type" id="product_type" required onchange="toggleVariationsSection()">
+                    <option value="simple">Simple Product (No Variations)</option>
+                    <option value="variable" selected>Variable Product (With Variations)</option>
+                </select>
             </div>
             
-            <?php if ($error): ?>
-                <div class="alert alert-error"><?php echo $error; ?></div>
-            <?php endif; ?>
-            
-            <?php if ($success): ?>
-                <div class="alert alert-success"><?php echo $success; ?></div>
-            <?php endif; ?>
-            
-            <form method="POST" enctype="multipart/form-data" class="product-form">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                
-                <div class="form-tabs">
-                    <div class="tab-headers">
-                        <button type="button" class="tab-header active" data-tab="basic">Basic Info</button>
-                        <button type="button" class="tab-header" data-tab="variations">Variations</button>
-                        <button type="button" class="tab-header" data-tab="images">Images</button>
-                        <button type="button" class="tab-header" data-tab="seo">SEO</button>
+            <!-- Simple Product Fields (hidden by default) -->
+            <div id="simple_product_fields" style="display: none;" class="form-group full-width">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="simple_price">Price ($) *</label>
+                        <input type="number" name="simple_price" id="simple_price" step="0.01" min="0" value="0">
                     </div>
                     
-                    <div class="tab-content">
-                        <!-- Basic Info Tab -->
-                        <div class="tab-pane active" id="basic">
+                    <div class="form-group">
+                        <label for="simple_sale_price">Sale Price ($)</label>
+                        <input type="number" name="simple_sale_price" id="simple_sale_price" step="0.01" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="simple_stock">Stock Quantity *</label>
+                        <input type="number" name="simple_stock" id="simple_stock" min="0" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="simple_weight">Weight (g)</label>
+                        <input type="number" name="simple_weight" id="simple_weight" step="0.01" min="0" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-info-circle"></i> Basic Information</h2>
+                        </div>
+                        <div class="card-body">
                             <div class="form-grid">
                                 <div class="form-group">
-                                    <label for="name">Product Name *</label>
-                                    <input type="text" id="name" name="name" required>
-                                </div>
-                                
-                                <div class="form-group">
                                     <label for="sku">SKU *</label>
-                                    <input type="text" id="sku" name="sku" required>
+                                    <input type="text" name="sku" id="sku" required 
+                                           placeholder="e.g., PERF001" 
+                                           pattern="[A-Z0-9-]+" 
+                                           title="Uppercase letters, numbers, and hyphens only">
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="slug">Slug *</label>
-                                    <input type="text" id="slug" name="slug" required>
+                                    <label for="name">Product Name *</label>
+                                    <input type="text" name="name" id="name" required 
+                                           placeholder="e.g., Noir Essence">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="slug">Slug</label>
+                                    <input type="text" name="slug" id="slug" 
+                                           placeholder="auto-generated">
+                                    <small>Leave empty to auto-generate from product name</small>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="brand">Brand *</label>
+                                    <input type="text" name="brand" id="brand" required 
+                                           placeholder="e.g., Luxe" value="ATK">
                                 </div>
                                 
                                 <div class="form-group">
                                     <label for="category_id">Category *</label>
-                                    <select id="category_id" name="category_id" required>
+                                    <select name="category_id" id="category_id" required>
                                         <option value="">Select Category</option>
                                         <?php foreach ($categories as $category): ?>
-                                            <option value="<?php echo $category['id']; ?>"><?php echo htmlspecialchars($category['name']); ?></option>
+                                            <option value="<?php echo $category['id']; ?>">
+                                                <?php echo htmlspecialchars($category['name']); ?>
+                                            </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label for="brand">Brand</label>
-                                    <input type="text" id="brand" name="brand">
-                                </div>
-                                
                                 <div class="form-group full-width">
                                     <label for="short_desc">Short Description *</label>
-                                    <textarea id="short_desc" name="short_desc" rows="3" required></textarea>
+                                    <textarea name="short_desc" id="short_desc" required 
+                                              placeholder="Brief description for product listings" 
+                                              rows="3"></textarea>
                                 </div>
                                 
                                 <div class="form-group full-width">
                                     <label for="long_desc">Long Description</label>
-                                    <textarea id="long_desc" name="long_desc" rows="6"></textarea>
+                                    <textarea name="long_desc" id="long_desc" 
+                                              placeholder="Detailed product description" 
+                                              rows="6"></textarea>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="is_active" name="is_active" value="1" checked>
-                                        <span>Active Product</span>
-                                    </label>
+                                <div class="form-group full-width">
+                                    <label for="tags">Tags</label>
+                                    <input type="text" name="tags" id="tags" 
+                                           placeholder="e.g., men, luxury, evening (comma separated)">
+                                    <small>Separate tags with commas</small>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Variations Tab -->
-                        <div class="tab-pane" id="variations">
-                            <div id="variations-container">
-                                <div class="variation-item">
-                                    <h4>Default Variation</h4>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label>SKU *</label>
-                                            <input type="text" name="variations[0][sku]" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Price *</label>
-                                            <input type="number" name="variations[0][price]" step="0.01" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Sale Price</label>
-                                            <input type="number" name="variations[0][sale_price]" step="0.01">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Stock *</label>
-                                            <input type="number" name="variations[0][stock]" required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Weight (g)</label>
-                                            <input type="number" name="variations[0][weight]" step="0.01">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="checkbox-label">
-                                                <input type="checkbox" name="variations[0][is_default]" value="1" checked>
-                                                <span>Default Variation</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Attribute selection would go here -->
-                                </div>
-                            </div>
-                            
-                            <button type="button" id="add-variation" class="btn btn-secondary">Add Variation</button>
-                        </div>
-                        
-                        <!-- Images Tab -->
-                        <div class="tab-pane" id="images">
-                            <div id="image-uploads">
-                                <div class="image-upload-item">
-                                    <div class="form-group">
-                                        <label>Image</label>
-                                        <input type="file" name="images[]" accept="image/*">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Alt Text</label>
-                                        <input type="text" name="image_alt[]">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Sort Order</label>
-                                        <input type="number" name="image_order[]" value="0">
-                                    </div>
-                                </div>
-                            </div>
-                            <button type="button" id="add-image" class="btn btn-secondary">Add Another Image</button>
-                        </div>
-                        
-                        <!-- SEO Tab -->
-                        <div class="tab-pane" id="seo">
-                            <div class="form-group">
-                                <label for="meta_title">Meta Title</label>
-                                <input type="text" id="meta_title" name="meta_title">
-                            </div>
-                            <div class="form-group">
-                                <label for="meta_description">Meta Description</label>
-                                <textarea id="meta_description" name="meta_description" rows="3"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="meta_keywords">Meta Keywords</label>
-                                <input type="text" id="meta_keywords" name="meta_keywords">
                             </div>
                         </div>
                     </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-images"></i> Product Images</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="main_image">Main Image *</label>
+                                    <input type="file" name="main_image" id="main_image" 
+                                           accept="image/*" required>
+                                    <small>Recommended: 800x800px, JPEG/PNG/WEBP</small>
+                                    <div id="main-image-preview" class="image-preview"></div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="gallery_images">Gallery Images</label>
+                                    <input type="file" name="gallery_images[]" id="gallery_images" 
+                                           multiple accept="image/*">
+                                    <small>Hold Ctrl to select multiple images</small>
+                                    <div id="gallery-preview" class="gallery-preview"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                   <div class="card" id="variations_section">
+    <div class="card-header">
+        <h2><i class="fas fa-cubes"></i> Product Variations</h2>
+        <button type="button" class="btn btn-primary" onclick="addVariation()" id="add_variation_btn">
+            <i class="fas fa-plus"></i> Add Variation
+        </button>
+    </div>
+    <div class="card-body">
+        <div id="variations-container">
+            <!-- Variations will be added here dynamically -->
+            <div class="variation-item" data-index="0">
+                <div class="variation-header">
+                    <h3>Variation #1 <span class="badge badge-primary">Default</span></h3>
+                    <button type="button" class="btn btn-danger btn-sm remove-variation-btn" 
+                            onclick="removeVariation(0)" style="display: none;">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
                 </div>
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Product</button>
-                    <button type="reset" class="btn btn-secondary">Reset</button>
-                </div>
-            </form>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label>SKU *</label>
+                                            <input type="text" name="variations[0][sku]" required 
+                                                   placeholder="e.g., PERF001-50ML-EDT">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Price ($) *</label>
+                                            <input type="number" name="variations[0][price]" 
+                                                   step="0.01" min="0" required value="0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Sale Price ($)</label>
+                                            <input type="number" name="variations[0][sale_price]" 
+                                                   step="0.01" min="0" value="0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Stock Quantity *</label>
+                                            <input type="number" name="variations[0][stock]" 
+                                                   min="0" required value="0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Weight (g)</label>
+                                            <input type="number" name="variations[0][weight]" 
+                                                   step="0.01" min="0" value="0">
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label>Variation Image</label>
+                                            <input type="file" name="variation_images[0]" 
+                                                   accept="image/*">
+                                            <div class="variation-image-preview" data-index="0"></div>
+                                        </div>
+                                        
+                                        <?php foreach ($attributes as $attr_name => $attr_data): ?>
+                                            <div class="form-group">
+                                                <label><?php echo htmlspecialchars($attr_name); ?></label>
+                                                <?php if ($attr_data['type'] === 'select' && !empty($attr_data['values'])): ?>
+                                                    <select name="variations[0][attributes][<?php echo htmlspecialchars($attr_name); ?>]">
+                                                        <option value="">Select <?php echo htmlspecialchars($attr_name); ?></option>
+                                                        <?php foreach ($attr_data['values'] as $value): ?>
+                                                            <option value="<?php echo htmlspecialchars($value['value']); ?>">
+                                                                <?php echo htmlspecialchars($value['value']); ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                <?php else: ?>
+                                                    <input type="text" name="variations[0][attributes][<?php echo htmlspecialchars($attr_name); ?>]" 
+                                                           placeholder="Enter <?php echo htmlspecialchars($attr_name); ?>">
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <hr>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Add Product
+                        </button>
+                        <a href="products.php" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </main>
         </div>
     </div>
 
-    <script src="../assets/js/admin-product.js"></script>
+    <script>
+        let variationCount = 1;
+        
+        function addVariation() {
+            const container = document.getElementById('variations-container');
+            const newVariation = document.createElement('div');
+            newVariation.className = 'variation-item';
+            newVariation.setAttribute('data-index', variationCount);
+            
+            // Generate attribute HTML
+            let attributesHtml = '';
+            <?php foreach ($attributes as $attr_name => $attr_data): ?>
+                attributesHtml += `
+                    <div class="form-group">
+                        <label><?php echo htmlspecialchars($attr_name); ?></label>
+                        <?php if ($attr_data['type'] === 'select' && !empty($attr_data['values'])): ?>
+                            <select name="variations[${variationCount}][attributes][<?php echo htmlspecialchars($attr_name); ?>]">
+                                <option value="">Select <?php echo htmlspecialchars($attr_name); ?></option>
+                                <?php foreach ($attr_data['values'] as $value): ?>
+                                    <option value="<?php echo htmlspecialchars($value['value']); ?>">
+                                        <?php echo htmlspecialchars($value['value']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php else: ?>
+                            <input type="text" name="variations[${variationCount}][attributes][<?php echo htmlspecialchars($attr_name); ?>]" 
+                                   placeholder="Enter <?php echo htmlspecialchars($attr_name); ?>">
+                        <?php endif; ?>
+                    </div>
+                `;
+            <?php endforeach; ?>
+            
+            newVariation.innerHTML = `
+                <div class="variation-header">
+                    <h3>Variation #${variationCount + 1}</h3>
+                    <button type="button" class="btn btn-danger btn-sm remove-variation-btn" onclick="removeVariation(${variationCount})">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>SKU *</label>
+                        <input type="text" name="variations[${variationCount}][sku]" required 
+                               placeholder="e.g., PERF001-50ML-EDT">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Price ($) *</label>
+                        <input type="number" name="variations[${variationCount}][price]" 
+                               step="0.01" min="0" required value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sale Price ($)</label>
+                        <input type="number" name="variations[${variationCount}][sale_price]" 
+                               step="0.01" min="0" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Stock Quantity *</label>
+                        <input type="number" name="variations[${variationCount}][stock]" 
+                               min="0" required value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Weight (g)</label>
+                        <input type="number" name="variations[${variationCount}][weight]" 
+                               step="0.01" min="0" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Variation Image</label>
+                        <input type="file" name="variation_images[${variationCount}]" 
+                               accept="image/*" onchange="previewVariationImage(${variationCount}, this)">
+                        <div class="variation-image-preview" data-index="${variationCount}"></div>
+                    </div>
+                    
+                    ${attributesHtml}
+                </div>
+                <hr>
+            `;
+            
+            container.appendChild(newVariation);
+            variationCount++;
+            
+            // Show remove buttons on all variations when we have more than one
+            if (variationCount > 1) {
+                document.querySelectorAll('.remove-variation-btn').forEach(btn => {
+                    btn.style.display = 'inline-block';
+                });
+            }
+        }
+        
+        function removeVariation(index) {
+            const variation = document.querySelector(`.variation-item[data-index="${index}"]`);
+            if (variation && variationCount > 1) {
+                variation.remove();
+                variationCount--;
+                
+                // Re-index remaining variations
+                const variations = document.querySelectorAll('.variation-item');
+                variations.forEach((variation, newIndex) => {
+                    variation.setAttribute('data-index', newIndex);
+                    variation.querySelector('h3').innerHTML = `Variation #${newIndex + 1} ${newIndex === 0 ? '<span class="badge badge-primary">Default</span>' : ''}`;
+                    
+                    // Update all input names
+                    const inputs = variation.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name) {
+                            input.setAttribute('name', name.replace(/variations\[\d+\]/, `variations[${newIndex}]`));
+                        }
+                    });
+                    
+                    // Update file input
+                    const fileInput = variation.querySelector('input[type="file"]');
+                    if (fileInput) {
+                        fileInput.setAttribute('name', `variation_images[${newIndex}]`);
+                        fileInput.setAttribute('onchange', `previewVariationImage(${newIndex}, this)`);
+                    }
+                    
+                    // Update preview container
+                    const preview = variation.querySelector('.variation-image-preview');
+                    if (preview) {
+                        preview.setAttribute('data-index', newIndex);
+                    }
+                });
+                
+                // Hide remove buttons if only one variation remains
+                if (variationCount === 1) {
+                    document.querySelectorAll('.remove-variation-btn').forEach(btn => {
+                        btn.style.display = 'none';
+                    });
+                }
+            }
+        }
+        
+        function previewVariationImage(index, input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.querySelector(`.variation-image-preview[data-index="${index}"]`);
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 100px; max-height: 100px; margin-top: 10px; border: 2px solid var(--gold); border-radius: 5px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Auto-generate slug from product name
+        document.getElementById('name').addEventListener('input', function() {
+            const slugField = document.getElementById('slug');
+            if (!slugField.value) {
+                const slug = this.value.toLowerCase()
+                    .replace(/[^a-z0-9 -]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+                slugField.value = slug;
+            }
+        });
+        
+        // Auto-generate SKU variations
+        document.getElementById('sku').addEventListener('input', function() {
+            const baseSku = this.value;
+            document.querySelectorAll('input[name^="variations"]').forEach(input => {
+                if (input.name.includes('[sku]') && !input.value) {
+                    input.value = baseSku + '-';
+                }
+            });
+        });
+        
+        // Image preview functionality
+        document.getElementById('main_image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('main-image-preview');
+                    preview.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px; margin-top: 10px; border: 2px solid var(--gold); border-radius: 5px;">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        document.getElementById('gallery_images').addEventListener('change', function(e) {
+            const preview = document.getElementById('gallery-preview');
+            preview.innerHTML = '';
+            
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '100px';
+                    img.style.maxHeight = '100px';
+                    img.style.margin = '5px';
+                    img.style.border = '2px solid var(--gold)';
+                    img.style.borderRadius = '5px';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+        // Toggle between simple and variable products
+function toggleVariationsSection() {
+    const productType = document.getElementById('product_type').value;
+    const variationsSection = document.getElementById('variations_section');
+    const simpleFields = document.getElementById('simple_product_fields');
+    const addVariationBtn = document.getElementById('add_variation_btn');
+    
+    if (productType === 'simple') {
+        variationsSection.style.display = 'none';
+        simpleFields.style.display = 'block';
+        addVariationBtn.style.display = 'none';
+        
+        // Auto-fill simple product fields from first variation
+        const firstVariation = document.querySelector('input[name="variations[0][price]"]');
+        if (firstVariation) {
+            document.getElementById('simple_price').value = firstVariation.value || '0';
+        }
+    } else {
+        variationsSection.style.display = 'block';
+        simpleFields.style.display = 'none';
+        addVariationBtn.style.display = 'inline-flex';
+    }
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleVariationsSection();
+});
+    </script>
+
+    <style>
+        .variation-item {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid #e0e0e0;
+        }
+        
+        .variation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .variation-header h3 {
+            margin: 0;
+            font-family: 'Cinzel', serif;
+            color: var(--black);
+        }
+        
+        .image-preview img, .gallery-preview img, .variation-image-preview img {
+            border: 2px solid var(--gold);
+            border-radius: var(--radius-sm);
+        }
+        
+        .gallery-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .form-actions {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #e0e0e0;
+            margin-top: 2rem;
+        }
+        
+        .product-form .form-grid {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+        
+        .remove-variation-btn {
+            display: none;
+        }
+        
+        .variation-item:first-child .remove-variation-btn {
+            display: none !important;
+        }
+    </style>
 </body>
 </html>

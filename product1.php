@@ -30,13 +30,18 @@ try {
         $placeholders = implode(',', array_fill(0, count($productIds), '?'));
         
         // 2) product_media
-        $sql = "SELECT product_id, file_path, alt_text FROM product_media WHERE product_id IN ($placeholders) ORDER BY product_id, sort_order ASC";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($productIds);
-        $rows = $stmt->fetchAll();
-        foreach ($rows as $r) {
-            $mediaMap[$r['product_id']][] = $r['file_path'];
-        }
+       $sql = "SELECT product_id, file_path, alt_text FROM product_media WHERE product_id IN ($placeholders) ORDER BY product_id, sort_order ASC";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($productIds);
+$rows = $stmt->fetchAll();
+foreach ($rows as $r) {
+    // Fix the path by prepending assets/uploads/ if needed
+    $file_path = $r['file_path'];
+    if (!str_starts_with($file_path, 'assets/uploads/')) {
+        $file_path = 'assets/uploads/' . $file_path;
+    }
+    $mediaMap[$r['product_id']][] = $file_path;
+}
 
         // 3) product_tags
         $sql = "SELECT product_id, tag FROM product_tags WHERE product_id IN ($placeholders)";
@@ -60,16 +65,21 @@ try {
         }
 
         // 5) variation_images
-        if (!empty($variationIds)) {
-            $placeholdersVar = implode(',', array_fill(0, count($variationIds), '?'));
-            $sql = "SELECT variation_id, file_path FROM variation_images WHERE variation_id IN ($placeholdersVar)";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($variationIds);
-            $rows = $stmt->fetchAll();
-            foreach ($rows as $r) {
-                $variationImagesMap[$r['variation_id']][] = $r['file_path'];
-            }
+       if (!empty($variationIds)) {
+    $placeholdersVar = implode(',', array_fill(0, count($variationIds), '?'));
+    $sql = "SELECT variation_id, file_path FROM variation_images WHERE variation_id IN ($placeholdersVar)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($variationIds);
+    $rows = $stmt->fetchAll();
+    foreach ($rows as $r) {
+        // Fix the path by prepending assets/uploads/ if needed
+        $file_path = $r['file_path'];
+        if (!str_starts_with($file_path, 'assets/uploads/')) {
+            $file_path = 'assets/uploads/' . $file_path;
         }
+        $variationImagesMap[$r['variation_id']][] = $file_path;
+    }
+}
     }
 
     // 6) Wishlist items for current user
@@ -112,13 +122,14 @@ try {
             }
             if ($defaultVar === null) $defaultVar = $vars[0];
         } else {
+            // Create a simple product structure (no variations)
             $defaultVar = [
                 'id' => null,
-                'price' => 0,
-                'sale_price' => null,
-                'sku' => '',
+                'price' => $p['price'] ?? 0, // Use product price if available
+                'sale_price' => $p['sale_price'] ?? null,
+                'sku' => $p['sku'],
                 'sku_attributes' => [],
-                'stock' => 0,
+                'stock' => $p['stock'] ?? 0,
                 'variation_images' => []
             ];
         }
@@ -137,6 +148,7 @@ try {
             'variations' => $vars,
             'default_variation' => $defaultVar,
             'is_in_wishlist' => in_array($pid, $wishlistSet, true),
+            'is_simple_product' => empty($vars) // Flag for simple products
         ];
     }
 
@@ -195,10 +207,10 @@ try {
     padding-bottom: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-scroll-snap-type: x proximity;
-overscroll-behavior-x: contain;
-scroll-padding-left: 6px;
-scroll-padding-right: 6px;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    scroll-padding-left: 6px;
+    scroll-padding-right: 6px;
     padding-left: 6px;
     padding-right: 6px;
     scrollbar-width: none;
@@ -227,7 +239,7 @@ scroll-padding-right: 6px;
     overflow: hidden;
     box-shadow: var(--shadow);
     scroll-snap-align: center;
-scroll-snap-stop: always;
+    scroll-snap-stop: always;
 
     display: flex;
     flex-direction: column;
@@ -238,7 +250,6 @@ scroll-snap-stop: always;
 }
 
 .product-slider-card:hover {
-   
     box-shadow: 0 18px 40px rgba(0,0,0,0.16);
 }
 
@@ -450,7 +461,6 @@ scroll-snap-stop: always;
     display: flex;
     gap: 10px;
     margin-top: auto;
-    /* padding-top: 12px; */
 }
 
 .product-slider-add-btn {
@@ -590,97 +600,102 @@ window.__CURRENT_USER__ = <?= isset($_SESSION['user_id']) ? json_encode((int)$_S
             .replace(/"/g,'&quot;');
     }
 
-    /* Create product card DOM */
-    function createCard(p, index) {
-        const img1 = p.media && p.media.length ? p.media[0] : placeholder;
-        const img2 = p.media && p.media.length > 1 ? p.media[1] : 
-                    (p.variations && p.variations[0] && p.variations[0].variation_images && p.variations[0].variation_images[0] ? 
-                     p.variations[0].variation_images[0] : img1);
+  /* Create product card DOM */
+function createCard(p, index) {
+    // Image logic: main image + gallery image on hover
+    const img1 = p.media && p.media.length ? p.media[0] : placeholder;
+    const img2 = p.media && p.media.length > 1 ? p.media[1] : img1;
 
-        const defaultVar = p.default_variation || {};
-        const price = parseFloat(defaultVar.price || 0);
-        const sale = (defaultVar.sale_price !== null && defaultVar.sale_price !== undefined) ? parseFloat(defaultVar.sale_price) : null;
-        const hasSale = sale !== null && !isNaN(sale) && sale < price;
-        const pctOff = hasSale ? Math.round((1 - (sale/price)) * 100) : 0;
+    const defaultVar = p.default_variation || {};
+    const price = parseFloat(defaultVar.price || 0);
+    const sale = (defaultVar.sale_price !== null && defaultVar.sale_price !== undefined) ? parseFloat(defaultVar.sale_price) : null;
+    const hasSale = sale !== null && !isNaN(sale) && sale < price;
+    const pctOff = hasSale ? Math.round((1 - (sale/price)) * 100) : 0;
 
-        // Build variation options
-        let varHtml = '';
-        if (p.variations && p.variations.length > 0) {
-            p.variations.forEach((v, i) => {
-                let label = '';
-                try {
-                    if (v.sku_attributes && typeof v.sku_attributes === 'object') {
-                        label = v.sku_attributes.volume || v.sku_attributes.size || v.sku || 'Option ' + (i+1);
-                    }
-                } catch(e) {
-                    label = v.sku || 'Option ' + (i+1);
-                }
-                if (!label) label = 'Option ' + (i+1);
+    // Build variation options - FIXED: Only show variations for non-simple products
+    let varHtml = '';
+    if (p.variations && p.variations.length > 0 && !p.is_simple_product) {
+        p.variations.forEach((v, i) => {
+            let label = '';
+            
+            // Use attribute values instead of SKU
+            if (v.sku_attributes && typeof v.sku_attributes === 'object' && Object.keys(v.sku_attributes).length > 0) {
+                // Get all attribute values and join them
+                const attrValues = Object.values(v.sku_attributes).filter(val => val && val.trim() !== '');
+                label = attrValues.join(' • ') || v.sku;
+            } else {
+                label = v.sku || 'Option ' + (i+1);
+            }
+            
+            // Shorten label if too long
+            if (label.length > 20) {
+                label = label.substring(0, 17) + '...';
+            }
+            
+            varHtml += `<div class="product-slider-variation ${i===0 ? 'active' : ''}" 
+                          data-variation-id="${esc(v.id)}" 
+                          data-price="${esc(v.price)}" 
+                          data-sale="${esc(v.sale_price)}">
+                        ${esc(label)}
+                      </div>`;
+        });
+    }
+
+    // Tags
+    let tagsHtml = '';
+    if (p.tags && p.tags.length) {
+        p.tags.forEach(t => tagsHtml += `<div class="product-slider-tag">${esc(t)}</div>`);
+    }
+
+    // Build card markup
+    const card = document.createElement('div');
+    card.className = 'product-slider-card';
+    card.dataset.productId = p.id;
+    card.dataset.isSimple = p.is_simple_product ? 'true' : 'false';
+    
+    card.innerHTML = `
+        <div class="product-slider-image-wrap">
+            <img class="product-slider-image" src="${esc(img1)}" alt="${esc(p.name)}" loading="lazy">
+            <img class="product-slider-image-2" src="${esc(img2)}" alt="${esc(p.name)}" loading="lazy">
+            <div class="product-slider-brand">${esc(p.brand)}</div>
+            <button class="product-slider-wishlist ${p.is_in_wishlist ? 'active' : ''}" 
+                    data-product-id="${esc(p.id)}" 
+                    aria-label="Wishlist">
+                <i class="${p.is_in_wishlist ? 'fas' : 'far'} fa-heart"></i>
+            </button>
+        </div>
+        <div class="product-slider-info">
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
+                    <div style="flex:1;">
+                        <div class="product-slider-category">${esc(p.category_name)}</div>
+                        <div class="product-slider-name">${esc(p.name)}</div>
+                    </div>
+                    ${hasSale ? `<div class="product-slider-sale">-${pctOff}%</div>` : ''}
+                </div>
                 
-                varHtml += `<div class="product-slider-variation ${i===0 ? 'active' : ''}" 
-                              data-variation-id="${esc(v.id)}" 
-                              data-price="${esc(v.price)}" 
-                              data-sale="${esc(v.sale_price)}">
-                            ${esc(label)}
-                          </div>`;
-            });
-        }
-
-        // Tags
-        let tagsHtml = '';
-        if (p.tags && p.tags.length) {
-            p.tags.forEach(t => tagsHtml += `<div class="product-slider-tag">${esc(t)}</div>`);
-        }
-
-        // Build card markup
-        const card = document.createElement('div');
-        card.className = 'product-slider-card';
-        card.dataset.productId = p.id;
-        card.innerHTML = `
-            <div class="product-slider-image-wrap">
-                <img class="product-slider-image" src="${esc(img1)}" alt="${esc(p.name)}" loading="lazy">
-                <img class="product-slider-image-2" src="${esc(img2)}" alt="${esc(p.name)}" loading="lazy">
-                <div class="product-slider-brand">${esc(p.brand)}</div>
-                <button class="product-slider-wishlist ${p.is_in_wishlist ? 'active' : ''}" 
+                <div class="product-slider-price-row">
+                    <div>
+                        <div class="product-slider-price">${hasSale ? '₹' + sale.toFixed(2) : '₹' + (price || 0).toFixed(2)}</div>
+                        ${hasSale ? `<div class="product-slider-original">₹${price.toFixed(2)}</div>` : ''}
+                    </div>
+                </div>
+                
+                ${varHtml ? `<div class="product-slider-variations">${varHtml}</div>` : ''}
+            </div>
+            
+            <div class="product-slider-actions">
+                <button class="product-slider-add-btn" 
                         data-product-id="${esc(p.id)}" 
-                        aria-label="Wishlist">
-                    <i class="${p.is_in_wishlist ? 'fas' : 'far'} fa-heart"></i>
+                        data-variation-id="${esc(p.default_variation ? p.default_variation.id : '')}">
+                    <i class="fas fa-cart-plus"></i> ADD TO CART
                 </button>
             </div>
-            <div class="product-slider-info">
-                <div>
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
-                        <div style="flex:1;">
-                            <div class="product-slider-category">${esc(p.category_name)}</div>
-                            <div class="product-slider-name">${esc(p.name)}</div>
-                        </div>
-                        ${hasSale ? `<div class="product-slider-sale">-${pctOff}%</div>` : ''}
-                    </div>
-                    
-                    <div class="product-slider-price-row">
-                        <div>
-                            <div class="product-slider-price">${hasSale ? '₹' + sale.toFixed(2) : '₹' + (price || 0).toFixed(2)}</div>
-                            ${hasSale ? `<div class="product-slider-original">₹${price.toFixed(2)}</div>` : ''}
-                        </div>
-                    </div>
-                    
-                    ${varHtml ? `<div class="product-slider-variations">${varHtml}</div>` : ''}
-                    
-                   
-                </div>
-                
-                <div class="product-slider-actions">
-                    <button class="product-slider-add-btn" 
-                            data-product-id="${esc(p.id)}" 
-                            data-variation-id="${esc(p.default_variation ? p.default_variation.id : '')}">
-                        <i class="fas fa-cart-plus"></i> ADD TO CART
-                    </button>
-                </div>
-            </div>
-        `;
+        </div>
+    `;
 
-        return card;
-    }
+    return card;
+}
 
     /* Render all cards */
     function renderAll() {
@@ -694,100 +709,96 @@ window.__CURRENT_USER__ = <?= isset($_SESSION['user_id']) ? json_encode((int)$_S
         enableDragScroll(slider);
     }
 
-    /* Improved drag scroll with better text selection prevention */
-   /* Smooth, unified drag scroll using Pointer Events */
-function enableDragScroll(el) {
-    let isDown = false;
-    let startX = 0;
-    let startScrollLeft = 0;
-    let lastClientX = 0;
-    let lastDeltaX = 0;
-    let rafId = null;
-    let isHorizontalDrag = false;
+    /* Smooth, unified drag scroll using Pointer Events */
+    function enableDragScroll(el) {
+        let isDown = false;
+        let startX = 0;
+        let startScrollLeft = 0;
+        let lastClientX = 0;
+        let lastDeltaX = 0;
+        let rafId = null;
+        let isHorizontalDrag = false;
 
-    // Make slider focusable for keyboard arrows (optional but useful)
-    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+        // Make slider focusable for keyboard arrows
+        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
 
-    const onPointerDown = (e) => {
-        // Ignore interactions on clickable controls
-        if (e.target.closest('.product-slider-variation') ||
-            e.target.closest('.product-slider-wishlist') ||
-            e.target.closest('.product-slider-add-btn')) {
-            return;
-        }
-
-        el.setPointerCapture?.(e.pointerId);
-        const rect = el.getBoundingClientRect();
-        startX = e.clientX - rect.left;
-        lastClientX = e.clientX;
-        startScrollLeft = el.scrollLeft;
-        lastDeltaX = 0;
-        isDown = true;
-        isHorizontalDrag = false;
-
-        el.classList.add('dragging');
-        el.style.cursor = 'grabbing';
-    };
-
-    const onPointerMove = (e) => {
-        if (!isDown) return;
-
-        // Axis lock: only treat as horizontal drag if horizontal movement dominates
-        const rect = el.getBoundingClientRect();
-        const currentX = e.clientX - rect.left;
-        const deltaX = currentX - startX;
-
-        // Determine drag axis if not yet decided
-        if (!isHorizontalDrag) {
-            const totalDeltaX = Math.abs(e.clientX - lastClientX);
-            const totalDeltaY = Math.abs(e.clientY - (el._lastClientY || e.clientY));
-            if (totalDeltaX > 3 || totalDeltaY > 3) {
-                isHorizontalDrag = totalDeltaX >= totalDeltaY;
+        const onPointerDown = (e) => {
+            // Ignore interactions on clickable controls
+            if (e.target.closest('.product-slider-variation') ||
+                e.target.closest('.product-slider-wishlist') ||
+                e.target.closest('.product-slider-add-btn')) {
+                return;
             }
-        }
 
-        // Prevent page scroll only when horizontal drag is active
-        if (isHorizontalDrag) {
-            e.preventDefault();
-        }
+            el.setPointerCapture?.(e.pointerId);
+            const rect = el.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            lastClientX = e.clientX;
+            startScrollLeft = el.scrollLeft;
+            lastDeltaX = 0;
+            isDown = true;
+            isHorizontalDrag = false;
 
-        // Smooth scrolling via requestAnimationFrame
-        lastDeltaX = e.clientX - lastClientX;
-        lastClientX = e.clientX;
-        el._lastClientY = e.clientY;
+            el.classList.add('dragging');
+            el.style.cursor = 'grabbing';
+        };
 
-        if (rafId) cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(() => {
-            // multiplier 1.0 for controlled speed (was 1.5, too jumpy)
-            const walk = (currentX - startX) * 1.0;
-            el.scrollLeft = startScrollLeft - walk;
-        });
-    };
+        const onPointerMove = (e) => {
+            if (!isDown) return;
 
-    const cleanup = (e) => {
-        if (!isDown) return;
-        isDown = false;
-        el.classList.remove('dragging');
-        el.style.cursor = '';
-        if (rafId) {
-            cancelAnimationFrame(rafId);
-            rafId = null;
-        }
-        // Let CSS snap finish naturally; we disabled mandatory snap already
-        el.releasePointerCapture?.(e.pointerId);
-    };
+            // Axis lock: only treat as horizontal drag if horizontal movement dominates
+            const rect = el.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const deltaX = currentX - startX;
 
-    el.addEventListener('pointerdown', onPointerDown, { passive: false });
-    el.addEventListener('pointermove', onPointerMove, { passive: false });
-    el.addEventListener('pointerup', cleanup, { passive: true });
-    el.addEventListener('pointerleave', cleanup, { passive: true });
-    el.addEventListener('pointercancel', cleanup, { passive: true });
-}
+            // Determine drag axis if not yet decided
+            if (!isHorizontalDrag) {
+                const totalDeltaX = Math.abs(e.clientX - lastClientX);
+                const totalDeltaY = Math.abs(e.clientY - (el._lastClientY || e.clientY));
+                if (totalDeltaX > 3 || totalDeltaY > 3) {
+                    isHorizontalDrag = totalDeltaX >= totalDeltaY;
+                }
+            }
 
+            // Prevent page scroll only when horizontal drag is active
+            if (isHorizontalDrag) {
+                e.preventDefault();
+            }
+
+            // Smooth scrolling via requestAnimationFrame
+            lastDeltaX = e.clientX - lastClientX;
+            lastClientX = e.clientX;
+            el._lastClientY = e.clientY;
+
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(() => {
+                const walk = (currentX - startX) * 1.0;
+                el.scrollLeft = startScrollLeft - walk;
+            });
+        };
+
+        const cleanup = (e) => {
+            if (!isDown) return;
+            isDown = false;
+            el.classList.remove('dragging');
+            el.style.cursor = '';
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            el.releasePointerCapture?.(e.pointerId);
+        };
+
+        el.addEventListener('pointerdown', onPointerDown, { passive: false });
+        el.addEventListener('pointermove', onPointerMove, { passive: false });
+        el.addEventListener('pointerup', cleanup, { passive: true });
+        el.addEventListener('pointerleave', cleanup, { passive: true });
+        el.addEventListener('pointercancel', cleanup, { passive: true });
+    }
 
     /* Attach interactions */
     function attachInteractions() {
-        // Variation selection
+        // Variation selection - FIXED: Remove image switching logic
         slider.addEventListener('click', function(e) {
             const variation = e.target.closest('.product-slider-variation');
             if (!variation) return;
@@ -801,7 +812,7 @@ function enableDragScroll(el) {
             allVariations.forEach(v => v.classList.remove('active'));
             variation.classList.add('active');
 
-            // Update price
+            // Update price only - no image switching
             const priceEl = card.querySelector('.product-slider-price');
             const origEl = card.querySelector('.product-slider-original');
             const price = parseFloat(variation.getAttribute('data-price') || 0);
@@ -825,28 +836,8 @@ function enableDragScroll(el) {
             // Update add button variation
             const btn = card.querySelector('.product-slider-add-btn');
             if (btn) btn.dataset.variationId = variation.dataset.variationId || '';
-
-            // Update images if available
-            const productId = card.dataset.productId;
-            const prod = products.find(pp => String(pp.id) === String(productId));
-            if (prod) {
-                const vid = parseInt(variation.dataset.variationId);
-                let newImg = null;
-                
-                if (!isNaN(vid)) {
-                    const variationData = (prod.variations || []).find(v => Number(v.id) === Number(vid));
-                    if (variationData && variationData.variation_images && variationData.variation_images.length) {
-                        newImg = variationData.variation_images[0];
-                    }
-                }
-
-                if (!newImg) newImg = (prod.media && prod.media[1]) ? prod.media[1] : prod.media[0];
-                
-                const imgEl2 = card.querySelector('.product-slider-image-2');
-                if (imgEl2 && newImg) {
-                    imgEl2.src = newImg;
-                }
-            }
+            
+            // REMOVED: Image switching logic - keep main + gallery hover effect only
         });
 
         // Wishlist
@@ -968,8 +959,7 @@ function enableDragScroll(el) {
 
     // Initialize
     renderAll();
-    // Ensure slider can receive focus for arrow-key scrolling
-slider.setAttribute('tabindex', '0');
+    slider.setAttribute('tabindex', '0');
 
 })();
 </script>

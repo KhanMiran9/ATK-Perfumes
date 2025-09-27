@@ -26,7 +26,7 @@ $auth = new Auth();
             
             <!-- Products Management -->
             <?php if ($auth->hasPermission('manage_products')): ?>
-            <li class="nav-item has-submenu <?php echo in_array($currentPage, ['products.php', 'product_add.php', 'product_edit.php', 'product_variations.php', 'product_media.php']) ? 'active' : ''; ?>">
+            <li class="nav-item has-submenu <?php echo in_array($currentPage, ['products.php', 'product_add.php', 'product_edit.php', 'attributes.php','product_variations.php', 'product_media.php']) ? 'active' : ''; ?>">
                 <a href="#" class="submenu-toggle">
                     <i class="fas fa-cube"></i>
                     <span>Products</span>
@@ -35,6 +35,7 @@ $auth = new Auth();
                 <ul class="submenu">
                     <li><a href="products.php" class="<?php echo $currentPage === 'products.php' ? 'active' : ''; ?>">All Products</a></li>
                     <li><a href="product_add.php" class="<?php echo $currentPage === 'product_add.php' ? 'active' : ''; ?>">Add New</a></li>
+                    <li><a href="attributes.php" class="<?php echo $currentPage === 'attributes.php' ? 'active' : ''; ?>">Attributes</a></li>
                     <li><a href="product_variations.php" class="<?php echo $currentPage === 'product_variations.php' ? 'active' : ''; ?>">Variations</a></li>
                     <li><a href="product_media.php" class="<?php echo $currentPage === 'product_media.php' ? 'active' : ''; ?>">Media Library</a></li>
                 </ul>

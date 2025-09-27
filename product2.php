@@ -51,13 +51,18 @@ try {
             $placeholders = implode(',', array_fill(0, count($productIds), '?'));
             
             // product_media
-            $sql = "SELECT product_id, file_path, alt_text FROM product_media WHERE product_id IN ($placeholders) ORDER BY product_id, sort_order ASC";
-            $stmtMedia = $pdo->prepare($sql);
-            $stmtMedia->execute($productIds);
-            $rows = $stmtMedia->fetchAll();
-            foreach ($rows as $r) {
-                $mediaMap[$r['product_id']][] = $r['file_path'];
-            }
+           $sql = "SELECT product_id, file_path, alt_text FROM product_media WHERE product_id IN ($placeholders) ORDER BY product_id, sort_order ASC";
+$stmtMedia = $pdo->prepare($sql);
+$stmtMedia->execute($productIds);
+$rows = $stmtMedia->fetchAll();
+foreach ($rows as $r) {
+    // Fix the path by prepending assets/uploads/ if needed
+    $file_path = $r['file_path'];
+    if (!str_starts_with($file_path, 'assets/uploads/')) {
+        $file_path = 'assets/uploads/' . $file_path;
+    }
+    $mediaMap[$r['product_id']][] = $file_path;
+}
 
             // product_tags
             $sql = "SELECT product_id, tag FROM product_tags WHERE product_id IN ($placeholders)";
@@ -81,16 +86,21 @@ try {
             }
 
             // variation_images
-            if (!empty($variationIds)) {
-                $placeholdersVar = implode(',', array_fill(0, count($variationIds), '?'));
-                $sql = "SELECT variation_id, file_path FROM variation_images WHERE variation_id IN ($placeholdersVar)";
-                $stmtVarImages = $pdo->prepare($sql);
-                $stmtVarImages->execute($variationIds);
-                $rows = $stmtVarImages->fetchAll();
-                foreach ($rows as $r) {
-                    $variationImagesMap[$r['variation_id']][] = $r['file_path'];
-                }
-            }
+           if (!empty($variationIds)) {
+    $placeholdersVar = implode(',', array_fill(0, count($variationIds), '?'));
+    $sql = "SELECT variation_id, file_path FROM variation_images WHERE variation_id IN ($placeholdersVar)";
+    $stmtVarImages = $pdo->prepare($sql);
+    $stmtVarImages->execute($variationIds);
+    $rows = $stmtVarImages->fetchAll();
+    foreach ($rows as $r) {
+        // Fix the path by prepending assets/uploads/ if needed
+        $file_path = $r['file_path'];
+        if (!str_starts_with($file_path, 'assets/uploads/')) {
+            $file_path = 'assets/uploads/' . $file_path;
+        }
+        $variationImagesMap[$r['variation_id']][] = $file_path;
+    }
+}
         }
 
         // Wishlist items for current user
@@ -144,22 +154,23 @@ try {
                 ];
             }
 
-            $enriched[] = [
-                'id' => $pid,
-                'sku' => $p['sku'],
-                'name' => $p['name'],
-                'slug' => $p['slug'],
-                'short_desc' => $p['short_desc'],
-                'long_desc' => $p['long_desc'],
-                'category_name' => $p['category_name'],
-                'category_id' => $p['category_id'],
-                'brand' => $p['brand'] ?: 'Brand',
-                'media' => array_values($media),
-                'tags' => array_values($tagsMap[$pid] ?? []),
-                'variations' => $vars,
-                'default_variation' => $defaultVar,
-                'is_in_wishlist' => in_array($pid, $wishlistSet, true),
-            ];
+          $enriched[] = [
+    'id' => $pid,
+    'sku' => $p['sku'],
+    'name' => $p['name'],
+    'slug' => $p['slug'],
+    'short_desc' => $p['short_desc'],
+    'long_desc' => $p['long_desc'],
+    'category_name' => $p['category_name'],
+    'category_id' => $p['category_id'],
+    'brand' => $p['brand'] ?: 'Brand',
+    'media' => array_values($media),
+    'tags' => array_values($tagsMap[$pid] ?? []),
+    'variations' => $vars,
+    'default_variation' => $defaultVar,
+    'is_in_wishlist' => in_array($pid, $wishlistSet, true),
+    'is_simple_product' => empty($vars) // Add this flag
+];
         }
 
         $categoryProductsMap[$category['id']] = $enriched;
@@ -830,94 +841,101 @@ window.__CURRENT_USER__ = <?= isset($_SESSION['user_id']) ? json_encode((int)$_S
     }
 
     /* Create product card DOM */
-    function createCard(p) {
-        const img1 = p.media && p.media.length ? p.media[0] : placeholder;
-        const img2 = p.media && p.media.length > 1 ? p.media[1] : 
-                    (p.variations && p.variations[0] && p.variations[0].variation_images && p.variations[0].variation_images[0] ? 
-                     p.variations[0].variation_images[0] : img1);
+   function createCard(p) {
+    // FIXED: Image paths are now correct from PHP
+    const img1 = p.media && p.media.length ? p.media[0] : placeholder;
+    const img2 = p.media && p.media.length > 1 ? p.media[1] : img1;
 
-        const defaultVar = p.default_variation || {};
-        const price = parseFloat(defaultVar.price || 0);
-        const sale = (defaultVar.sale_price !== null && defaultVar.sale_price !== undefined) ? parseFloat(defaultVar.sale_price) : null;
-        const hasSale = sale !== null && !isNaN(sale) && sale < price;
-        const pctOff = hasSale ? Math.round((1 - (sale/price)) * 100) : 0;
+    const defaultVar = p.default_variation || {};
+    const price = parseFloat(defaultVar.price || 0);
+    const sale = (defaultVar.sale_price !== null && defaultVar.sale_price !== undefined) ? parseFloat(defaultVar.sale_price) : null;
+    const hasSale = sale !== null && !isNaN(sale) && sale < price;
+    const pctOff = hasSale ? Math.round((1 - (sale/price)) * 100) : 0;
 
-        // Build variation options
-        let varHtml = '';
-        if (p.variations && p.variations.length > 0) {
-            p.variations.forEach((v, i) => {
-                let label = '';
-                try {
-                    if (v.sku_attributes && typeof v.sku_attributes === 'object') {
-                        label = v.sku_attributes.volume || v.sku_attributes.size || v.sku || 'Option ' + (i+1);
-                    }
-                } catch(e) {
-                    label = v.sku || 'Option ' + (i+1);
-                }
-                if (!label) label = 'Option ' + (i+1);
+    // Build variation options - FIXED: Only show variations for non-simple products
+    let varHtml = '';
+    if (p.variations && p.variations.length > 0 && !p.is_simple_product) {
+        p.variations.forEach((v, i) => {
+            let label = '';
+            
+            // Use attribute values instead of SKU
+            if (v.sku_attributes && typeof v.sku_attributes === 'object' && Object.keys(v.sku_attributes).length > 0) {
+                // Get all attribute values and join them
+                const attrValues = Object.values(v.sku_attributes).filter(val => val && val.trim() !== '');
+                label = attrValues.join(' • ') || v.sku;
+            } else {
+                label = v.sku || 'Option ' + (i+1);
+            }
+            
+            // Shorten label if too long
+            if (label.length > 20) {
+                label = label.substring(0, 17) + '...';
+            }
+            
+            varHtml += `<div class="product-variation ${i===0 ? 'active' : ''}" 
+                          data-variation-id="${esc(v.id)}" 
+                          data-price="${esc(v.price)}" 
+                          data-sale="${esc(v.sale_price)}">
+                        ${esc(label)}
+                      </div>`;
+        });
+    }
+
+    // Tags
+    let tagsHtml = '';
+    if (p.tags && p.tags.length) {
+        p.tags.forEach(t => tagsHtml += `<div class="product-tag">${esc(t)}</div>`);
+    }
+
+    // Build card markup
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.dataset.productId = p.id;
+    card.dataset.isSimple = p.is_simple_product ? 'true' : 'false';
+    
+    card.innerHTML = `
+        <div class="product-image-wrap">
+            <img class="product-image" src="${esc(img1)}" alt="${esc(p.name)}" loading="lazy">
+            <img class="product-image-2" src="${esc(img2)}" alt="${esc(p.name)}" loading="lazy">
+            <div class="product-brand">${esc(p.brand)}</div>
+            <button class="product-wishlist ${p.is_in_wishlist ? 'active' : ''}" 
+                    data-product-id="${esc(p.id)}" 
+                    aria-label="Wishlist">
+                <i class="${p.is_in_wishlist ? 'fas' : 'far'} fa-heart"></i>
+            </button>
+        </div>
+        <div class="product-info">
+            <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
+                    <div style="flex:1;">
+                        <div class="product-category">${esc(p.category_name)}</div>
+                        <div class="product-name">${esc(p.name)}</div>
+                    </div>
+                    ${hasSale ? `<div class="product-sale">-${pctOff}%</div>` : ''}
+                </div>
                 
-                varHtml += `<div class="product-variation ${i===0 ? 'active' : ''}" 
-                              data-variation-id="${esc(v.id)}" 
-                              data-price="${esc(v.price)}" 
-                              data-sale="${esc(v.sale_price)}">
-                            ${esc(label)}
-                          </div>`;
-            });
-        }
-
-        // Tags
-        let tagsHtml = '';
-        if (p.tags && p.tags.length) {
-            p.tags.forEach(t => tagsHtml += `<div class="product-tag">${esc(t)}</div>`);
-        }
-
-        // Build card markup
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        card.dataset.productId = p.id;
-        card.innerHTML = `
-            <div class="product-image-wrap">
-                <img class="product-image" src="${esc(img1)}" alt="${esc(p.name)}" loading="lazy">
-                <img class="product-image-2" src="${esc(img2)}" alt="${esc(p.name)}" loading="lazy">
-                <div class="product-brand">${esc(p.brand)}</div>
-                <button class="product-wishlist ${p.is_in_wishlist ? 'active' : ''}" 
+                <div class="product-price-row">
+                    <div>
+                        <div class="product-price">${hasSale ? '₹' + sale.toFixed(2) : '₹' + (price || 0).toFixed(2)}</div>
+                        ${hasSale ? `<div class="product-original">₹${price.toFixed(2)}</div>` : ''}
+                    </div>
+                </div>
+                
+                ${varHtml ? `<div class="product-variations">${varHtml}</div>` : ''}
+            </div>
+            
+            <div class="product-actions">
+                <button class="product-add-btn" 
                         data-product-id="${esc(p.id)}" 
-                        aria-label="Wishlist">
-                    <i class="${p.is_in_wishlist ? 'fas' : 'far'} fa-heart"></i>
+                        data-variation-id="${esc(p.default_variation ? p.default_variation.id : '')}">
+                    <i class="fas fa-cart-plus"></i> ADD TO CART
                 </button>
             </div>
-            <div class="product-info">
-                <div>
-                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;">
-                        <div style="flex:1;">
-                            <div class="product-category">${esc(p.category_name)}</div>
-                            <div class="product-name">${esc(p.name)}</div>
-                        </div>
-                        ${hasSale ? `<div class="product-sale">-${pctOff}%</div>` : ''}
-                    </div>
-                    
-                    <div class="product-price-row">
-                        <div>
-                            <div class="product-price">${hasSale ? '₹' + sale.toFixed(2) : '₹' + (price || 0).toFixed(2)}</div>
-                            ${hasSale ? `<div class="product-original">₹${price.toFixed(2)}</div>` : ''}
-                        </div>
-                    </div>
-                    
-                    ${varHtml ? `<div class="product-variations">${varHtml}</div>` : ''}
-                </div>
-                
-                <div class="product-actions">
-                    <button class="product-add-btn" 
-                            data-product-id="${esc(p.id)}" 
-                            data-variation-id="${esc(p.default_variation ? p.default_variation.id : '')}">
-                        <i class="fas fa-cart-plus"></i> ADD TO CART
-                    </button>
-                </div>
-            </div>
-        `;
+        </div>
+    `;
 
-        return card;
-    }
+    return card;
+}
 
     /* Render category tabs */
     function renderCategoryTabs() {

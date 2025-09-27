@@ -27,7 +27,7 @@ $stmt = $conn->prepare($query);
 $stmt->execute();
 $total_revenue = $stmt->fetch(PDO::FETCH_ASSOC)['total_revenue'] ?? 0;
 
-// Total products
+// Total products   
 $query = "SELECT COUNT(*) as total_products FROM products WHERE is_active = 1";
 $stmt = $conn->prepare($query);
 $stmt->execute();
@@ -67,6 +67,10 @@ $low_stock = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | LuxePerfume</title>
+     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/admin.css">
 </head>
 <body>
