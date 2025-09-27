@@ -1,12 +1,4 @@
 <?php
-/**
- * product1.php - Fixed version
- * - Uses existing includes/config.php and db.php
- * - Fixes button alignment issues
- * - Fixes variation selection on desktop
- * - Prevents text/image selection during swipe
- * - Makes variation buttons more luxurious
- */
 
 // Use existing config and database connection
 require_once 'includes/config.php';
@@ -203,8 +195,10 @@ try {
     padding-bottom: 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
+scroll-snap-type: x proximity;
+overscroll-behavior-x: contain;
+scroll-padding-left: 6px;
+scroll-padding-right: 6px;
     padding-left: 6px;
     padding-right: 6px;
     scrollbar-width: none;
@@ -232,7 +226,9 @@ try {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: var(--shadow);
-    scroll-snap-align: start;
+    scroll-snap-align: center;
+scroll-snap-stop: always;
+
     display: flex;
     flex-direction: column;
     min-width: 260px;
@@ -699,74 +695,95 @@ window.__CURRENT_USER__ = <?= isset($_SESSION['user_id']) ? json_encode((int)$_S
     }
 
     /* Improved drag scroll with better text selection prevention */
-    function enableDragScroll(el) {
-        let isDown = false;
-        let startX;
-        let scrollLeft;
+   /* Smooth, unified drag scroll using Pointer Events */
+function enableDragScroll(el) {
+    let isDown = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+    let lastClientX = 0;
+    let lastDeltaX = 0;
+    let rafId = null;
+    let isHorizontalDrag = false;
 
-        el.addEventListener('mousedown', (e) => {
-            if (e.target.closest('.product-slider-variation') || 
-                e.target.closest('.product-slider-wishlist') ||
-                e.target.closest('.product-slider-add-btn')) {
-                return;
+    // Make slider focusable for keyboard arrows (optional but useful)
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
+
+    const onPointerDown = (e) => {
+        // Ignore interactions on clickable controls
+        if (e.target.closest('.product-slider-variation') ||
+            e.target.closest('.product-slider-wishlist') ||
+            e.target.closest('.product-slider-add-btn')) {
+            return;
+        }
+
+        el.setPointerCapture?.(e.pointerId);
+        const rect = el.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        lastClientX = e.clientX;
+        startScrollLeft = el.scrollLeft;
+        lastDeltaX = 0;
+        isDown = true;
+        isHorizontalDrag = false;
+
+        el.classList.add('dragging');
+        el.style.cursor = 'grabbing';
+    };
+
+    const onPointerMove = (e) => {
+        if (!isDown) return;
+
+        // Axis lock: only treat as horizontal drag if horizontal movement dominates
+        const rect = el.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const deltaX = currentX - startX;
+
+        // Determine drag axis if not yet decided
+        if (!isHorizontalDrag) {
+            const totalDeltaX = Math.abs(e.clientX - lastClientX);
+            const totalDeltaY = Math.abs(e.clientY - (el._lastClientY || e.clientY));
+            if (totalDeltaX > 3 || totalDeltaY > 3) {
+                isHorizontalDrag = totalDeltaX >= totalDeltaY;
             }
-            
-            isDown = true;
-            el.classList.add('dragging');
-            startX = e.pageX - el.offsetLeft;
-            scrollLeft = el.scrollLeft;
-            el.style.cursor = 'grabbing';
-        });
+        }
 
-        el.addEventListener('mouseleave', () => {
-            isDown = false;
-            el.classList.remove('dragging');
-            el.style.cursor = '';
-        });
-
-        el.addEventListener('mouseup', () => {
-            isDown = false;
-            el.classList.remove('dragging');
-            el.style.cursor = '';
-        });
-
-        el.addEventListener('mousemove', (e) => {
-            if (!isDown) return;
+        // Prevent page scroll only when horizontal drag is active
+        if (isHorizontalDrag) {
             e.preventDefault();
-            const x = e.pageX - el.offsetLeft;
-            const walk = (x - startX) * 1.5;
-            el.scrollLeft = scrollLeft - walk;
+        }
+
+        // Smooth scrolling via requestAnimationFrame
+        lastDeltaX = e.clientX - lastClientX;
+        lastClientX = e.clientX;
+        el._lastClientY = e.clientY;
+
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+            // multiplier 1.0 for controlled speed (was 1.5, too jumpy)
+            const walk = (currentX - startX) * 1.0;
+            el.scrollLeft = startScrollLeft - walk;
         });
+    };
 
-        // Touch events for mobile
-        let touchStartX = 0;
-        let scrollLeftStart = 0;
+    const cleanup = (e) => {
+        if (!isDown) return;
+        isDown = false;
+        el.classList.remove('dragging');
+        el.style.cursor = '';
+        if (rafId) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+        // Let CSS snap finish naturally; we disabled mandatory snap already
+        el.releasePointerCapture?.(e.pointerId);
+    };
 
-        el.addEventListener('touchstart', (e) => {
-            if (e.target.closest('.product-slider-variation') || 
-                e.target.closest('.product-slider-wishlist') ||
-                e.target.closest('.product-slider-add-btn')) {
-                return;
-            }
-            
-            touchStartX = e.touches[0].pageX;
-            scrollLeftStart = el.scrollLeft;
-            el.classList.add('dragging');
-        }, { passive: true });
+    el.addEventListener('pointerdown', onPointerDown, { passive: false });
+    el.addEventListener('pointermove', onPointerMove, { passive: false });
+    el.addEventListener('pointerup', cleanup, { passive: true });
+    el.addEventListener('pointerleave', cleanup, { passive: true });
+    el.addEventListener('pointercancel', cleanup, { passive: true });
+}
 
-        el.addEventListener('touchmove', (e) => {
-            if (!touchStartX) return;
-            const touchX = e.touches[0].pageX;
-            const walk = (touchX - touchStartX) * 1.5;
-            el.scrollLeft = scrollLeftStart - walk;
-        }, { passive: true });
-
-        el.addEventListener('touchend', () => {
-            touchStartX = 0;
-            scrollLeftStart = 0;
-            el.classList.remove('dragging');
-        }, { passive: true });
-    }
 
     /* Attach interactions */
     function attachInteractions() {
@@ -951,5 +968,8 @@ window.__CURRENT_USER__ = <?= isset($_SESSION['user_id']) ? json_encode((int)$_S
 
     // Initialize
     renderAll();
+    // Ensure slider can receive focus for arrow-key scrolling
+slider.setAttribute('tabindex', '0');
+
 })();
 </script>
